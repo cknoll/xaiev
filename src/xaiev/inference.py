@@ -158,6 +158,8 @@ class InferenceManager:
         result_dict = {}
         path_start_idx = len(self.data_base_path) + 1
 
+        # TODO: detect HPC in a different way
+
         if not "horse" in self.data_base_path:
             all_img_paths = tqdm.tqdm(all_img_paths)
 
@@ -200,26 +202,3 @@ def main(model_full_name, data_base_path=None, model_cp_base_path=None, mode="co
         mode=mode,
     )
     im.run()
-
-
-if __name__ == "__main__":
-
-    parser = utils.get_default_arg_parser()
-    parser.add_argument(
-        "--mode",
-        "-m",
-        type=str,
-        help=(
-            "mode: 'copy' (default) or 'json'. Mode 'json' means a) the files are read from "
-            "their original class-subdirs and b) the result is `results.json` and not a directory full of files"
-        ),
-        default="copy",
-    )
-    args = parser.parse_args()
-
-    main(
-        model_full_name=args.model_full_name,
-        data_base_path=args.data_base_path,
-        model_cp_base_path=args.model_cp_base_path,
-        mode=args.mode,
-    )
