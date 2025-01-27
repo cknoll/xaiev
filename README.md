@@ -26,7 +26,7 @@ XAIEV_BASE_DIR="/home/username/xaiev/data"
 This file is evaluated by `utils.read_paths_from_dotenv()`. Note: The package `opencv-python` has to be installed (see `requirements.txt`)
 
 
-The expected path structure is as follows:
+The expected path structure (assuming the dataset atsds_large) is as follows:
 
 ```
 <BASE_DIR>                      specified in .env file

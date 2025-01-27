@@ -1,6 +1,7 @@
 import os
-from . import utils
 
+from . import utils
+# note: some imports are done in the functions below, to achieve faster execution for individual commands
 
 def bootstrap():
     """
@@ -24,5 +25,6 @@ def bootstrap():
     print("\nDone.", "Please edit this file now and add the correct data path (see README.md).")
 
 
-def inference():
-    pass
+def do_inference(*args, **kwargs):
+    from . import inference
+    inference.main(*args, **kwargs)

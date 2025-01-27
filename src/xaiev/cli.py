@@ -1,5 +1,7 @@
 import argparse
 
+from ipydex import IPS
+
 from . import core
 from . import utils
 
@@ -9,7 +11,11 @@ def main():
     parser = argparse.ArgumentParser()
     # for every argument we also have a short form
     parser.add_argument(
-        "--model_full_name", "-n", type=str, help="Full model name (e.g., simple_cnn_1_1)",
+        "--model-full-name",
+        "--model_full_name",  # note: --model_full_name is accepted for legacy reasons only
+        "-n",
+        type=str,
+        help="Full model name (e.g., simple_cnn_1_1)",
     )
 
     parser.add_argument(
@@ -20,14 +26,20 @@ def main():
         "--inference", action="store_true", help="create .env configuration file in current workdir"
     )
 
+    parser.add_argument('--dataset_name', type=str, default="atsds_large", help="Name of the dataset.")
+
     args = parser.parse_args()
 
     if args.bootstrap:
         core.bootstrap()
         return
-    elif args.inference:
+
+    CONF = utils.create_config(args)
+
+    if args.inference:
         if args.model_full_name is None:
             msg = "Command line argument `--model-full-name` missing. Cannot continue."
             print(utils.bred(msg))
             exit(1)
-        core.inference()
+
+        core.do_inference(args.model_full_name, CONF.DATA_SET_PATH, CONF.MODEL_CP_PATH)

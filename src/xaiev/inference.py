@@ -12,8 +12,7 @@ from torchvision import transforms
 # Personal debug module (`pip install ipydex`)
 from ipydex import IPS
 
-from model import get_model
-import utils
+from .model import get_model
 
 
 # shortcut
@@ -193,13 +192,6 @@ def to_list(tensor):
 
 def main(model_full_name, data_base_path=None, model_cp_base_path=None, mode="copy"):
 
-    if data_base_path is None:
-        # Hardcoded path for HPC
-        data_base_path = "/data/horse/ws/knoll-traffic_sign_reproduction/atsds_large"
-
-    if model_cp_base_path is None:
-        # use local directory
-        model_cp_base_path = "model"
 
     im = InferenceManager(
         model_full_name=model_full_name,
