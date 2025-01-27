@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xaiev"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Carsten Knoll", email = "carsten.knoll@posteo.de" }
+    # TODO: add Julian and Thomas
+]
+
+dynamic = ["dependencies", "version"]
+requires-python = ">=3.11"
+
+
+[project.scripts]
+# convert bgr to rgb
+xaiev = "xaiev.cli:main"
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+version = {attr = "xaiev.__version__"}
+
+# this significantly speeds up pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
