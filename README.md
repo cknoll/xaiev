@@ -1,3 +1,6 @@
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![PyPI version](https://badge.fury.io/py/xaiev.svg)](https://pypi.org/project/xaiev/)
+
 # Framework for the evaluation of XAI algorithms (XAIEV)
 
 ## Installation (work in progress)
@@ -68,3 +71,11 @@ The expected path structure is as follows:
     ├── resnet50/..
     ├── convnext_tiny/..
 ```
+
+
+## Contributing
+
+### Code Style
+
+- We (aim to) use `black -l 110 ./` to ensure coding style consistency, see also: [code style black](https://github.com/psf/black).
+- We recommend using [typing hints](https://mypy.readthedocs.io/en/stable/cheat_sheet_py3.html)
