@@ -13,6 +13,7 @@ from torchvision import transforms
 from ipydex import IPS
 
 from .model import get_model
+from . import utils
 
 
 # shortcut
@@ -22,17 +23,35 @@ pjoin = os.path.join
 class InferenceManager:
     """
     Class to bundle inference functionality.
+
+    There are two ways of providing data:
+        - a) individual files in `inference/images_to_classify`
+        - b) just use all files from `<dataset_name>/test/*/`
+
+    There are two modes to provide results:
+        - a) mode="copy" (default)
+            - images are copied to `inference/classification_results/<model_name>/<class_name>/
+        - b) mode="json"
+            - a json file with all results is produced:
+            - inference/classification_results/<model_name>/classification_results.json
+
+
+
     """
 
-    def __init__(self, model_full_name: str, data_base_path: str, model_cp_base_path: str, mode: str):
+    def __init__(self, model_full_name: str, conf: utils.CONF):
 
         self.model_full_name = model_full_name
-        self.data_base_path = data_base_path
-        self.model_cp_base_path = model_cp_base_path
-        self.mode = mode
+        self.inference_data_base_path = conf.INFERENCE_DATA_BASE_PATH
+        self.dataset_base_path = conf.DATA_SET_PATH
+        self.model_cp_base_path = conf.MODEL_CP_PATH
+        self.mode = conf.INFERENCE_MODE
+        self.output_dir_path = pjoin(
+            self.inference_data_base_path, "classification_results", self.model_full_name
+        )
 
-        # use simple enumeration here (might be overwritten with directory names later)
-        self.class_names = [f"{i:05d}" for i in range(1, 20)]  # e.g., 00001 to 00019
+        self.class_names = None
+        self.set_class_names()
 
         # Transformation for inference images
         self.transform_inference = transforms.Compose(
@@ -51,17 +70,26 @@ class InferenceManager:
         self.load_model_and_weights()
 
     def run(self):
+        input_folder = os.path.join(self.inference_data_base_path, "images_to_classify")
+        if os.path.exists(input_folder):
+            input_paths = glob.glob(pjoin(input_folder, "*"))
+        else:
+            new_path = pjoin(self.dataset_base_path, "test")
+            msg = (
+                f"Expected input directory {input_folder} does not exist. "
+                f"Using test fraction of dataset instead: {new_path}"
+            )
+            print(utils.yellow(msg))
+            input_paths = self.get_image_paths_of_dataset_part(part="test")
+
         if self.mode == "json":
-            self.classify_with_json_result()
+            self.classify_with_json_result(input_paths)
         else:
             # this is the original mode
             # mode == "copy"
 
-            input_folder = os.path.join(self.data_base_path, "inference/images_to_classify")
-            output_folder = os.path.join(self.data_base_path, "inference/classified_images")
-
             # Organize images into class folders
-            self.organize_images(input_folder, output_folder)
+            self.organize_images(input_paths)
 
     def load_model_and_weights(self):
 
@@ -101,18 +129,17 @@ class InferenceManager:
         else:
             return class_names[predicted.item()]
 
-    def get_image_paths(self, sub_path="test"):
+    def set_class_names(self, part: str  = "test"):
         """
-        return a list of absolute paths of all images e.g. from train/ or test/
-
-        also: set self.class_names to appropriate directory names
+        :param part:    either "test" or "train"
         """
+        class_dirs = glob.glob(pjoin(self.dataset_base_path, part, "*"))
+        self.class_names = [os.path.split(abspath)[1] for abspath in class_dirs]
 
-        host_path = pjoin(self.data_base_path, sub_path)
-        class_dirs = glob.glob(pjoin(host_path, "*"))
+    def get_image_paths_of_dataset_part(self, part: str  = "test"):
+
+        class_dirs = glob.glob(pjoin(self.dataset_base_path, part, "*"))
         assert len(class_dirs) == len(self.class_names)
-        dir_name_start_idx = len(host_path) + 1
-        self.class_names = [path[dir_name_start_idx:] for path in class_dirs]
 
         all_paths = []
 
@@ -123,57 +150,61 @@ class InferenceManager:
 
         return all_paths
 
-    def organize_images(self, input_folder, output_folder):
+    def organize_images(self, input_paths: list[str]):
         """
         organize images into class folders (copy mode)
+
+        :param input_paths:     list of absolute paths of the images
         """
+
         # Clear the output folder at the beginning
-        if os.path.exists(output_folder):
-            shutil.rmtree(output_folder)  # Remove all contents in the output folder
-        os.makedirs(output_folder, exist_ok=True)
+        if os.path.exists(self.output_dir_path):
+            shutil.rmtree(self.output_dir_path)  # Remove all contents in the output folder
+        os.makedirs(self.output_dir_path, exist_ok=True)
 
         # Create class folders
         for class_name in self.class_names:
-            class_folder = os.path.join(output_folder, class_name)
+            class_folder = os.path.join(self.output_dir_path, class_name)
             os.makedirs(class_folder, exist_ok=True)
 
-        # Process each image in the input folder
-        for filename in os.listdir(input_folder):
-            if filename.endswith((".jpg", ".jpeg", ".png")):
-                file_path = os.path.join(input_folder, filename)
+        # Process each image in the list
+        for file_path in input_paths:
+            if file_path.endswith((".jpg", ".jpeg", ".png")):
+                filename = os.path.split(file_path)[1]
                 predicted_class = self.predict_image(self.model, file_path, self.class_names)
-                dest_folder = os.path.join(output_folder, predicted_class)
+                dest_folder = os.path.join(self.output_dir_path, predicted_class)
                 shutil.copy(file_path, os.path.join(dest_folder, filename))
                 print(f"Copied {filename} to {dest_folder}")
 
-    def classify_with_json_result(self):
+    def classify_with_json_result(self, input_paths: list[str]):
+        """
 
-        all_img_paths = self.get_image_paths()
+        :param input_paths:     list of absolute paths of the images
+        """
 
-        random.shuffle(all_img_paths)
+        random.shuffle(input_paths)
 
         # make testing faster
-        all_img_paths = all_img_paths[:30]
+        # input_paths = input_paths[:30]
 
         result_dict = {}
-        path_start_idx = len(self.data_base_path) + 1
 
         # TODO: detect HPC in a different way
+        if not "horse" in self.inference_data_base_path:
+            input_paths = tqdm.tqdm(input_paths)
 
-        if not "horse" in self.data_base_path:
-            all_img_paths = tqdm.tqdm(all_img_paths)
-
-        for image_path in all_img_paths:
+        for image_path in input_paths:
             res = self.predict_image(self.model, image_path, self.class_names, full_res=True)
 
-            # short_path = "test/00001/000000.png"
-            short_path = image_path[path_start_idx:]
-            train_test_dir, class_dir, fname = short_path.split(os.path.sep)
-            boolean_result = class_dir == res["class"]
+            # example: image_path = "/home/username/xaiev/data/atsds_large/test/00002/000096.png'"
+            short_path = os.path.join(*image_path.split(os.path.sep)[-3:])
+            class_dir = image_path.split(os.path.sep)[-2]
+            boolean_result = (class_dir == res["class"])
             res["boolean_result"] = boolean_result
             result_dict[short_path] = res
 
-        json_fpath = "results.json"
+        json_fpath = pjoin(self.output_dir_path, "classification_results.json")
+        os.makedirs(self.output_dir_path, exist_ok=True)
         with open(json_fpath, "w") as fp:
             json.dump(result_dict, fp, indent=2)
 
@@ -192,13 +223,7 @@ def to_list(tensor):
     return res2
 
 
-def main(model_full_name, data_base_path=None, model_cp_base_path=None, mode="copy"):
+def main(model_full_name, conf: utils.CONF):
 
-
-    im = InferenceManager(
-        model_full_name=model_full_name,
-        data_base_path=data_base_path,
-        model_cp_base_path=model_cp_base_path,
-        mode=mode,
-    )
+    im = InferenceManager(model_full_name, conf)
     im.run()

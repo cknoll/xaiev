@@ -1,6 +1,7 @@
 import argparse
 
-from ipydex import IPS
+from ipydex import IPS, activate_ips_on_exception
+activate_ips_on_exception()
 
 from . import core
 from . import utils
@@ -26,6 +27,10 @@ def main():
         "--inference", action="store_true", help="create .env configuration file in current workdir"
     )
 
+    parser.add_argument(
+        "--inference-mode", "-im", choices=["copy", "json"], default="copy"
+    )
+
     parser.add_argument('--dataset_name', type=str, default="atsds_large", help="Name of the dataset.")
 
     args = parser.parse_args()
@@ -42,4 +47,4 @@ def main():
             print(utils.bred(msg))
             exit(1)
 
-        core.do_inference(args.model_full_name, CONF.DATA_SET_PATH, CONF.MODEL_CP_PATH)
+        core.do_inference(args.model_full_name, CONF)

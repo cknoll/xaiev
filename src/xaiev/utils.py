@@ -1,5 +1,4 @@
 import os
-from types import SimpleNamespace  # used as flexible Container Class
 
 from dotenv import load_dotenv
 from colorama import Style, Fore
@@ -13,8 +12,9 @@ class CONF:
     XAIEV_BASE_DIR: str
     DATA_SET_PATH: str
     MODEL_CP_PATH: str
+    INFERENCE_DATA_BASE_PATH: str
+    INFERENCE_MODE: str
 
-# CONF = SimpleNamespace()
 
 def read_conf_from_dotenv() -> CONF:
     assert os.path.isfile(".env")
@@ -30,8 +30,11 @@ def create_config(args) -> CONF:
     read_conf_from_dotenv()  # manipulate global variable CONF
     CONF.DATA_SET_PATH = os.path.join(CONF.XAIEV_BASE_DIR, args.dataset_name)
     CONF.MODEL_CP_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "model_checkpoints")
+    CONF.INFERENCE_DATA_BASE_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "inference")
+    CONF.INFERENCE_MODE = args.inference_mode
 
     return CONF
+
 
 ################################################################################
 # functions to create colored console outputs

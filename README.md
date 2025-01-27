@@ -44,6 +44,12 @@ The expected path structure (assuming the dataset atsds_large) is as follows:
 │
 ├── atsds_large_mask/...        corresponding mask images with same structure
 │                               as in atsds_large (test/..., train/...)
+├── inference/
+│   ├── images_to_classify      directory for images which should be classified
+│   └── classification_results
+│       ├── simple_cnn_1_1      classification results for a specific model
+│       └── ...
+│
 ├── model_checkpoints/
 │   ├── convnext_tiny_1_1.tar
 │   ├── resnet50_1_1.tar
