@@ -12,11 +12,10 @@ authors = [
 ]
 
 dynamic = ["dependencies", "version"]
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 
 
 [project.scripts]
-# convert bgr to rgb
 xaiev = "xaiev.cli:main"
 
 
