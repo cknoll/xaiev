@@ -13,10 +13,11 @@
 
 Many scripts and notebooks in this repo depend on paths. To ensure that the code runs on different machines (local development machines, HPC, etc) we use a `.env` file. This file is machine-specific and is expected to define the necessary paths in environment variables.
 
-Example:
+Example (see also .env-example):
 
 ```.env
-BASE_DIR="/home/username/xaiev/data
+# Note: This directory might contain several GB of (auto-generated) data
+XAIEV_BASE_DIR="/home/username/xaiev/data"
 ```
 
 This file is evaluated by `utils.read_paths_from_dotenv()`. Note: The package `opencv-python` has to be installed (see `requirements.txt`)
@@ -67,4 +68,3 @@ The expected path structure is as follows:
     ├── resnet50/..
     ├── convnext_tiny/..
 ```
-

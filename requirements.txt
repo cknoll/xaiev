@@ -1,0 +1,7 @@
+torch
+torchvision
+tabulate
+urllib3
+python-dotenv
+opencv-python
+ipydex
