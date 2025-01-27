@@ -74,7 +74,9 @@ class InferenceManager:
         # load model architecture
         self.model = get_model(model_name=model_name, n_classes=len(self.class_names)).to(self.device)
 
-        checkpoint = torch.load(model_fpath, map_location=self.device, weights_only=False)  # Load to CPU or GPU
+        checkpoint = torch.load(
+            model_fpath, map_location=self.device, weights_only=False
+        )  # Load to CPU or GPU
         self.epoch = checkpoint["epoch"]
         self.trainstats = checkpoint["trainstats"]
         self.model.load_state_dict(checkpoint["model"])
@@ -166,7 +168,7 @@ class InferenceManager:
             # short_path = "test/00001/000000.png"
             short_path = image_path[path_start_idx:]
             train_test_dir, class_dir, fname = short_path.split(os.path.sep)
-            boolean_result = (class_dir == res["class"])
+            boolean_result = class_dir == res["class"]
             res["boolean_result"] = boolean_result
             result_dict[short_path] = res
 
@@ -175,6 +177,7 @@ class InferenceManager:
             json.dump(result_dict, fp, indent=2)
 
         print(f"file written: {json_fpath}")
+
 
 # end of class InferenceManager
 
