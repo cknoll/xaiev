@@ -26,7 +26,7 @@ XAIEV_BASE_DIR="/home/username/xaiev/data"
 This file is evaluated by `utils.read_paths_from_dotenv()`. Note: The package `opencv-python` has to be installed (see `requirements.txt`)
 
 
-The expected path structure is as follows:
+The expected path structure (assuming the dataset atsds_large) is as follows:
 
 ```
 <BASE_DIR>                      specified in .env file
@@ -44,6 +44,12 @@ The expected path structure is as follows:
 │
 ├── atsds_large_mask/...        corresponding mask images with same structure
 │                               as in atsds_large (test/..., train/...)
+├── inference/
+│   ├── images_to_classify      directory for images which should be classified
+│   └── classification_results
+│       ├── simple_cnn_1_1      classification results for a specific model
+│       └── ...
+│
 ├── model_checkpoints/
 │   ├── convnext_tiny_1_1.tar
 │   ├── resnet50_1_1.tar
