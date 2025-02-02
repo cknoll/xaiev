@@ -1,7 +1,9 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![PyPI version](https://badge.fury.io/py/xaiev.svg)](https://pypi.org/project/xaiev/)
 
-# Framework for the evaluation of XAI algorithms (XAIEV)
+# Framework for the Evaluation of XAI Algorithms (XAIEV)
+
+**This code is heavily based on the [master thesis](https://github.com/Lunnaris01/Masterarbeit_Public) of Julian Ulrich[@Lunnaris01](https://github.com/Lunnaris01/).**
 
 ## Installation (work in progress)
 
