@@ -3,7 +3,7 @@
 
 # Framework for the Evaluation of XAI Algorithms (XAIEV)
 
-**This code is heavily based on the [master thesis](https://github.com/Lunnaris01/Masterarbeit_Public) of Julian Ulrich[@Lunnaris01](https://github.com/Lunnaris01/).**
+**This code is heavily based on the [master thesis](https://github.com/Lunnaris01/Masterarbeit_Public) of Julian Ulrich [@Lunnaris01](https://github.com/Lunnaris01/).**
 
 ## Installation (work in progress)
 
