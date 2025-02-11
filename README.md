@@ -1,4 +1,5 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![CI](https://github.com/cknoll/xaiev/actions/workflows/python-app.yml/badge.svg)](https://github.com/cknoll/xaiev/actions/workflows/python-app.yml)
 [![PyPI version](https://badge.fury.io/py/xaiev.svg)](https://pypi.org/project/xaiev/)
 
 # Framework for the Evaluation of XAI Algorithms (XAIEV)
