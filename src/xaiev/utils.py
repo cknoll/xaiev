@@ -14,7 +14,9 @@ class CONF:
     MODEL_CP_PATH: str
     INFERENCE_DATA_BASE_PATH: str
     INFERENCE_MODE: str
-
+    DATASET_NAME: str
+    DATASET_SPLIT: str
+    RANDOM_SEED : int
 
 def read_conf_from_dotenv() -> CONF:
     assert os.path.isfile(".env")
@@ -32,6 +34,9 @@ def create_config(args) -> CONF:
     CONF.MODEL_CP_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "model_checkpoints")
     CONF.INFERENCE_DATA_BASE_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "inference")
     CONF.INFERENCE_MODE = args.inference_mode
+    CONF.DATASET_NAME = args.dataset_name
+    CONF.DATASET_SPLIT = args.dataset_split
+    CONF.RANDOM_SEED = args.random_seed
 
     return CONF
 

@@ -20,6 +20,18 @@ def main():
     )
 
     parser.add_argument(
+        '--dataset_name', type=str, default="atsds_large", help="Name of the dataset."
+    )
+
+    parser.add_argument(
+        '--dataset_split', type=str, default="test", help="Dataset split (e.g., 'train', 'test')."
+    )
+
+    parser.add_argument(
+        '--random_seed', type=int, default=1414, help="Random seed for reproducibility."
+    )
+        
+    parser.add_argument(
         "--bootstrap", action="store_true", help="create .env configuration file in current workdir"
     )
 
@@ -31,7 +43,9 @@ def main():
         "--inference-mode", "-im", choices=["copy", "json"], default="copy"
     )
 
-    parser.add_argument('--dataset_name', type=str, default="atsds_large", help="Name of the dataset.")
+    parser.add_argument(
+        "--gradcam", action="store_true", help="create .env configuration file in current workdir"
+    )
 
     args = parser.parse_args()
 
@@ -48,3 +62,11 @@ def main():
             exit(1)
 
         core.do_inference(args.model_full_name, CONF)
+
+    if args.gradcam:
+        if args.model_full_name is None:
+            msg = "Command line argument `--model-full-name` missing. Cannot continue."
+            print(utils.bred(msg))
+            exit(1)
+
+        core.do_gradcam(args.model_full_name, CONF)

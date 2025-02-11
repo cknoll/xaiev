@@ -19,7 +19,6 @@ from . import utils
 # shortcut
 pjoin = os.path.join
 
-
 class InferenceManager:
     """
     Class to bundle inference functionality.

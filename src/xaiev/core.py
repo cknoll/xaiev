@@ -28,3 +28,7 @@ def bootstrap():
 def do_inference(*args, **kwargs):
     from . import inference
     inference.main(*args, **kwargs)
+
+def do_gradcam(*args, **kwargs):
+    from . import gradcamheatmap
+    gradcamheatmap.main(*args, **kwargs)

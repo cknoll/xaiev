@@ -77,8 +77,9 @@ def get_model(model_name, n_classes):
     if(model_name == "advanced_cnn"):
         return ImprovedCNN(n_classes)
 
-def load_model(model,optimizer,scheduler,filepath):
-    cpt = torch.load(filepath, map_location=torch.device('cpu'), weights_only=False)
+def load_model(model, optimizer, scheduler, filepath, device):
+    # cpt = torch.load(filepath, map_location=torch.device('cpu'), weights_only=False)
+    cpt = torch.load(filepath, map_location= device, weights_only=False)
     model.load_state_dict(cpt['model'])
     optimizer.load_state_dict(cpt['optimizer'])
     scheduler.load_state_dict(cpt['scheduler'])
