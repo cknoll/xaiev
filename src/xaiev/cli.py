@@ -28,6 +28,10 @@ def main():
     )
 
     parser.add_argument(
+        '--version', action="store_true", help="print current version and exit"
+    )
+
+    parser.add_argument(
         '--dataset_name', type=str, default="atsds_large", help="Name of the dataset."
     )
 
@@ -71,7 +75,12 @@ def main():
 
     if args.bootstrap:
         core.bootstrap()
-        return
+        exit()
+
+    if args.version:
+        from .release import __version__
+        print(__version__)
+        exit()
 
     CONF = utils.create_config(args)
 
