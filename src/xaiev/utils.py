@@ -19,7 +19,9 @@ class CONF:
     RANDOM_SEED : int
 
 def read_conf_from_dotenv() -> CONF:
-    assert os.path.isfile(".env")
+    if not os.path.isfile(".env"):
+        msg = "Could not find configuration file (.env). Please see section 'Bootstrapping' in README.md."
+        raise FileNotFoundError(msg)
     load_dotenv()
 
     CONF.XAIEV_BASE_DIR = os.getenv("XAIEV_BASE_DIR")
