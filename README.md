@@ -90,16 +90,20 @@ The expected path structure (assuming the dataset atsds_large) is as follows:
 
 ### General Usage
 
-The pipeline consists of four steps:
+The four steps of the pipeline (with example calls):
 - (1) model training,
-    - not yet included in `xaiev`
+    - `xaiev train --model simple_cnn_1_1`
 - (2) applying XAI algorithms to generate weighted saliency maps,
-    - `xaiev --gradcam`
-    - TODO: refactor cli to `xaiev --create-xai-saliency-maps gradcam`
+    - `xaiev create-saliency-maps --xai gradcam --model simple_cnn_1_1`
 - (3) generating new test images with varying percentages of "important" pixels removed or retained, and
-    - `xaiev --create-xai-saliency-maps gradcam --model simple_cnn_1_1`
+    - `xaiev create-eval-images --xai gradcam --model simple_cnn_1_1`
 - (4) statistically evaluating accuracy changes on these test images and comparison to the ground truth.
-    - `xaiev --eval gradcam --model simple_cnn_1_1`
+    - `xaiev eval --xai gradcam --model simple_cnn_1_1`
+
+#### Additional calls:
+
+- Use a trained model to perform classification
+    - `xaiev inference --model simple_cnn_1_1`
 
 ## Contributing
 

@@ -10,13 +10,19 @@ def main():
 
     # useful link https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser()
-    # TODO: for every argument we also should have a short form
+
+    parser.add_argument(
+        "command",
+        choices=["train", "inference", "create-saliency-maps", "create-eval-images", "eval"],
+        help="main xaiev command",
+        nargs="?",
+    )
+
     parser.add_argument(
         "--model",
         "--model-full-name",
         "--model_full_name",  # note: --model_full_name etc is accepted for legacy reasons only
         "-n",  # obsolete (legacy)
-        "-m",
         type=str,
         help="Full model name (e.g., simple_cnn_1_1)",
     )
@@ -57,7 +63,6 @@ def main():
         help="choose an XAI method to create the saliency maps",
     )
 
-
     parser.add_argument(
         "--debug", action="store_true", help="start interactive debug mode; then exit"
     )
@@ -74,22 +79,24 @@ def main():
         IPS()
         exit()
 
-    if args.inference:
-        if args.model_full_name is None:
-            msg = "Command line argument `--model` missing. Cannot continue."
-            print(utils.bred(msg))
-            exit(1)
+    if args.command == "train":
+        utils.ensure_model(args)
+        msg = "not yet implemented"
+        raise NotImplementedError(msg)
 
-        core.do_inference(args.model_full_name, CONF)
+    elif args.command == "inference":
+        utils.ensure_model(args)
+        core.do_inference(args.model, CONF)
 
-    # TODO: use create-xai-saliency-maps
-    elif args.gradcam:
-        if args.model_full_name is None:
-            msg = "Command line argument `--model-full-name` missing. Cannot continue."
-            print(utils.bred(msg))
-            exit(1)
+    elif args.command == "create-saliency-maps":
+        utils.ensure_xai_method_and_model(args)
+        if args.xai_method != "gradcam":
+            raise NotImplementedError()
 
-        core.do_gradcam(args.model_full_name, CONF)
+        # TODO: improve function name
+        core.do_gradcam(args.model, CONF)
+    elif args.command == "create-eval-images":
+        utils.ensure_xai_method_and_model(args)
 
-    elif args.foo:
-        pass
+    elif args.command == "eval":
+        utils.ensure_xai_method_and_model(args)
