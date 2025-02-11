@@ -77,15 +77,15 @@ def main():
         core.bootstrap()
         exit()
 
+    if args.version:
+        from .release import __version__
+        print(__version__)
+        exit()
+
     CONF = utils.create_config(args)
 
     if args.debug:
         IPS()
-        exit()
-
-    if args.version:
-        from .release import __version__
-        print(__version__)
         exit()
 
     if args.command == "train":
