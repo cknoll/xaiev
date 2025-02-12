@@ -1,7 +1,10 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![CI](https://github.com/cknoll/xaiev/actions/workflows/python-app.yml/badge.svg)](https://github.com/cknoll/xaiev/actions/workflows/python-app.yml)
 [![PyPI version](https://badge.fury.io/py/xaiev.svg)](https://pypi.org/project/xaiev/)
 
-# Framework for the evaluation of XAI algorithms (XAIEV)
+# Framework for the Evaluation of XAI Algorithms (XAIEV)
+
+**This code is heavily based on the [master thesis](https://github.com/Lunnaris01/Masterarbeit_Public) of Julian Ulrich [@Lunnaris01](https://github.com/Lunnaris01/).**
 
 ## Installation (work in progress)
 
@@ -11,6 +14,13 @@
 
 
 ## Usage
+
+### Bootstrap
+
+- Open terminal in the directory you want to use for future xaiev-usage.
+- Run `xaiev --bootstrap`.
+    - This creates `.env` file in current working directory.
+- Edit this file (see next section).
 
 ### General Notes on Paths
 
@@ -78,6 +88,23 @@ The expected path structure (assuming the dataset atsds_large) is as follows:
     ├── convnext_tiny/..
 ```
 
+
+### General Usage
+
+The four steps of the pipeline (with example calls):
+- (1) model training,
+    - `xaiev train --model simple_cnn_1_1`
+- (2) applying XAI algorithms to generate weighted saliency maps,
+    - `xaiev create-saliency-maps --xai gradcam --model simple_cnn_1_1`
+- (3) generating new test images with varying percentages of "important" pixels removed or retained, and
+    - `xaiev create-eval-images --xai gradcam --model simple_cnn_1_1`
+- (4) statistically evaluating accuracy changes on these test images and comparison to the ground truth.
+    - `xaiev eval --xai gradcam --model simple_cnn_1_1`
+
+#### Additional calls:
+
+- Use a trained model to perform classification
+    - `xaiev inference --model simple_cnn_1_1`
 
 ## Contributing
 

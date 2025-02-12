@@ -10,13 +10,25 @@ def main():
 
     # useful link https://docs.python.org/3/library/argparse.html
     parser = argparse.ArgumentParser()
-    # for every argument we also have a short form
+
     parser.add_argument(
+        "command",
+        choices=["train", "inference", "create-saliency-maps", "create-eval-images", "eval"],
+        help="main xaiev command",
+        nargs="?",
+    )
+
+    parser.add_argument(
+        "--model",
         "--model-full-name",
-        "--model_full_name",  # note: --model_full_name is accepted for legacy reasons only
-        "-n",
+        "--model_full_name",  # note: --model_full_name etc is accepted for legacy reasons only
+        "-n",  # obsolete (legacy)
         type=str,
         help="Full model name (e.g., simple_cnn_1_1)",
+    )
+
+    parser.add_argument(
+        '--version', action="store_true", help="print current version and exit"
     )
 
     parser.add_argument(
@@ -30,13 +42,13 @@ def main():
     parser.add_argument(
         '--random_seed', type=int, default=1414, help="Random seed for reproducibility."
     )
-        
+
     parser.add_argument(
         "--bootstrap", action="store_true", help="create .env configuration file in current workdir"
     )
 
     parser.add_argument(
-        "--inference", action="store_true", help="create .env configuration file in current workdir"
+        "--inference", action="store_true", help="apply selected model to dataset to perform classification"
     )
 
     parser.add_argument(
@@ -47,26 +59,53 @@ def main():
         "--gradcam", action="store_true", help="create .env configuration file in current workdir"
     )
 
+    parser.add_argument(
+        "--create-xai-saliency-maps",
+        "-csm",
+        metavar="XAI_METHOD",
+        type=str,
+        help="choose an XAI method to create the saliency maps",
+    )
+
+    parser.add_argument(
+        "--debug", action="store_true", help="start interactive debug mode; then exit"
+    )
+
     args = parser.parse_args()
 
     if args.bootstrap:
         core.bootstrap()
-        return
+        exit()
+
+    if args.version:
+        from .release import __version__
+        print(__version__)
+        exit()
 
     CONF = utils.create_config(args)
 
-    if args.inference:
-        if args.model_full_name is None:
-            msg = "Command line argument `--model-full-name` missing. Cannot continue."
-            print(utils.bred(msg))
-            exit(1)
+    if args.debug:
+        IPS()
+        exit()
 
-        core.do_inference(args.model_full_name, CONF)
+    if args.command == "train":
+        utils.ensure_model(args)
+        msg = "not yet implemented"
+        raise NotImplementedError(msg)
 
-    if args.gradcam:
-        if args.model_full_name is None:
-            msg = "Command line argument `--model-full-name` missing. Cannot continue."
-            print(utils.bred(msg))
-            exit(1)
+    elif args.command == "inference":
+        utils.ensure_model(args)
+        core.do_inference(args.model, CONF)
 
-        core.do_gradcam(args.model_full_name, CONF)
+    elif args.command == "create-saliency-maps":
+        utils.ensure_xai_method_and_model(args)
+        if args.xai_method != "gradcam":
+            raise NotImplementedError()
+
+        # TODO: improve function name
+        core.do_gradcam(args.model, CONF)
+    elif args.command == "create-eval-images":
+        utils.ensure_xai_method_and_model(args)
+
+    elif args.command == "eval":
+        utils.ensure_xai_method_and_model(args)

@@ -19,7 +19,9 @@ class CONF:
     RANDOM_SEED : int
 
 def read_conf_from_dotenv() -> CONF:
-    assert os.path.isfile(".env")
+    if not os.path.isfile(".env"):
+        msg = "Could not find configuration file (.env). Please see section 'Bootstrapping' in README.md."
+        raise FileNotFoundError(msg)
     load_dotenv()
 
     CONF.XAIEV_BASE_DIR = os.getenv("XAIEV_BASE_DIR")
@@ -39,6 +41,25 @@ def create_config(args) -> CONF:
     CONF.RANDOM_SEED = args.random_seed
 
     return CONF
+
+
+def ensure_xai_method(args):
+    if args.model is None:
+        msg = "Command line argument `--xai-method` missing. Cannot continue."
+        print(bred(msg))
+        exit(1)
+
+
+def ensure_model(args):
+    if args.model is None:
+        msg = "Command line argument `--model` missing. Cannot continue."
+        print(bred(msg))
+        exit(1)
+
+
+def ensure_xai_method_and_model(args):
+    ensure_xai_method(args)
+    ensure_model(args)
 
 
 ################################################################################
