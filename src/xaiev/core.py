@@ -34,3 +34,10 @@ def do_inference(*args, **kwargs):
 def do_gradcam(*args, **kwargs):
     from . import gradcamheatmap
     gradcamheatmap.main(*args, **kwargs)
+
+
+def create_eval_images(xai_method: str, model: str):
+    pass
+
+def do_evaluation(xai_method: str, model: str):
+    pass
