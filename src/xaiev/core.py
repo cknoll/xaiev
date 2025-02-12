@@ -14,20 +14,22 @@ def bootstrap():
         print(utils.yellow(msg))
         exit(1)
 
-    print("Create .env file in local working directory.")
+    cwd = os.path.abspath(os.getcwd())
+    print(f"Create .env file in current working directory: {cwd}.")
     content = (
         "# Note: This directory might contain several GB of (auto-generated) data\n"
-        'XAIEV_BASE_DIR="/home/username/xaiev/data"\n'
+        f'XAIEV_BASE_DIR="{cwd}"\n'
     )
 
     with open(fpath, "w") as fp:
         fp.write(content)
-    print("\nDone.", "Please edit this file now and add the correct data path (see README.md).")
+    print("\nDone.", "Please edit this file now and check for the correct data path (see README.md).")
 
 
 def do_inference(*args, **kwargs):
     from . import inference
     inference.main(*args, **kwargs)
+
 
 def do_gradcam(*args, **kwargs):
     from . import gradcamheatmap
