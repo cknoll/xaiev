@@ -27,6 +27,8 @@ def main():
         help="Full model name (e.g., simple_cnn_1_1)",
     )
 
+    parser.add_argument("--xai", type=str, help="specify the XAI method (e.g. gradcam, xrai, prism, lime)")
+
     parser.add_argument(
         '--version', action="store_true", help="print current version and exit"
     )
@@ -53,18 +55,6 @@ def main():
 
     parser.add_argument(
         "--inference-mode", "-im", choices=["copy", "json"], default="copy"
-    )
-
-    parser.add_argument(
-        "--gradcam", action="store_true", help="create .env configuration file in current workdir"
-    )
-
-    parser.add_argument(
-        "--create-xai-saliency-maps",
-        "-csm",
-        metavar="XAI_METHOD",
-        type=str,
-        help="choose an XAI method to create the saliency maps",
     )
 
     parser.add_argument(
@@ -99,11 +89,20 @@ def main():
 
     elif args.command == "create-saliency-maps":
         utils.ensure_xai_method_and_model(args)
-        if args.xai_method != "gradcam":
-            raise NotImplementedError()
+        if args.xai_method == "gradcam":
+            # TODO: improve function name (indicate "create-saliency-maps")
+            core.do_gradcam(args.model, CONF)
+        elif args.xai_method == "xrai":
+            raise NotImplementedError("will be implemented soon")
+        elif args.xai_method == "prism":
+            raise NotImplementedError("will be implemented soon")
+        elif args.xai_method == "lime":
+            raise NotImplementedError("will be implemented soon")
+        else:
+            msg = f"Unknown xai method: '{args.xai_method}')"
+            print(utils.bred(msg))
+            exit(2)
 
-        # TODO: improve function name
-        core.do_gradcam(args.model, CONF)
     elif args.command == "create-eval-images":
         utils.ensure_xai_method_and_model(args)
 
