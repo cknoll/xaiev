@@ -95,7 +95,8 @@ The four steps of the pipeline (with example calls):
 - (1) model training,
     - `xaiev train --model simple_cnn_1_1`
 - (2) applying XAI algorithms to generate weighted saliency maps,
-    - `xaiev create-saliency-maps --xai gradcam --model simple_cnn_1_1`
+    - `xaiev create-saliency-maps --xai_method gradcam --model simple_cnn_1_1`
+    - `xaiev create-saliency-maps --xai_method int_g --model simple_cnn_1_1`
 - (3) generating new test images with varying percentages of "important" pixels removed or retained, and
     - `xaiev create-eval-images --xai gradcam --model simple_cnn_1_1`
 - (4) statistically evaluating accuracy changes on these test images and comparison to the ground truth.
