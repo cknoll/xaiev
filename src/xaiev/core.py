@@ -29,6 +29,10 @@ def do_inference(*args, **kwargs):
     from . import inference
     inference.main(*args, **kwargs)
 
-def do_gradcam(*args, **kwargs):
+def do_gradcam_pipeline(*args, **kwargs):
     from . import gradcamheatmap
     gradcamheatmap.main(*args, **kwargs)
+
+def do_int_g_pipeline(*args, **kwargs):
+    from . import int_g_pipeline
+    int_g_pipeline.main(*args, **kwargs)

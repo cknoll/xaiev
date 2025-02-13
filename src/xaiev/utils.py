@@ -44,7 +44,7 @@ def create_config(args) -> CONF:
 
 
 def ensure_xai_method(args):
-    if args.model is None:
+    if args.xai_method is None:
         msg = "Command line argument `--xai-method` missing. Cannot continue."
         print(bred(msg))
         exit(1)

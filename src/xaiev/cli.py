@@ -55,9 +55,9 @@ def main():
         "--inference-mode", "-im", choices=["copy", "json"], default="copy"
     )
 
-    parser.add_argument(
-        "--gradcam", action="store_true", help="create .env configuration file in current workdir"
-    )
+    # parser.add_argument(
+    #     "--gradcam", action="store_true", help="create .env configuration file in current workdir"
+    # )
 
     parser.add_argument(
         "--create-xai-saliency-maps",
@@ -69,6 +69,10 @@ def main():
 
     parser.add_argument(
         "--debug", action="store_true", help="start interactive debug mode; then exit"
+    )
+
+    parser.add_argument(
+        "--xai_method", type=str, help="Select XAI method"
     )
 
     args = parser.parse_args()
@@ -99,11 +103,14 @@ def main():
 
     elif args.command == "create-saliency-maps":
         utils.ensure_xai_method_and_model(args)
-        if args.xai_method != "gradcam":
-            raise NotImplementedError()
+        if args.xai_method == "int_g":
+            core.do_int_g_pipeline(args.model, CONF)
+        elif args.xai_method == "gradcam":
+            # TODO: improve function name
+            core.do_gradcam_pipeline(args.model, CONF)
+        else:
+            raise NotImplementedError(msg)
 
-        # TODO: improve function name
-        core.do_gradcam(args.model, CONF)
     elif args.command == "create-eval-images":
         utils.ensure_xai_method_and_model(args)
 
