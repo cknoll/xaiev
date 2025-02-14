@@ -55,10 +55,6 @@ def main():
         "--inference-mode", "-im", choices=["copy", "json"], default="copy"
     )
 
-    # parser.add_argument(
-    #     "--gradcam", action="store_true", help="create .env configuration file in current workdir"
-    # )
-
     parser.add_argument(
         "--create-xai-saliency-maps",
         "-csm",
@@ -105,6 +101,12 @@ def main():
         utils.ensure_xai_method_and_model(args)
         if args.xai_method == "int_g":
             core.do_int_g_pipeline(args.model, CONF)
+        elif args.xai_method == "lime":
+            core.do_lime_pipeline(args.model, CONF)
+        elif args.xai_method == "xrai":
+            core.do_xrai_pipeline(args.model, CONF)
+        elif args.xai_method == "prism":
+            core.do_prism_pipeline(args.model, CONF)
         elif args.xai_method == "gradcam":
             # TODO: improve function name
             core.do_gradcam_pipeline(args.model, CONF)

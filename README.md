@@ -102,6 +102,36 @@ The four steps of the pipeline (with example calls):
 - (4) statistically evaluating accuracy changes on these test images and comparison to the ground truth.
     - `xaiev eval --xai gradcam --model simple_cnn_1_1`
 
+#### Arguments for create-saliency-maps
+- (1) **`--xai_method`** (required):  
+  Selects the explainable AI (XAI) method to be used in the analysis.  
+  **Example:**  
+  `--xai_method gradcam`
+
+- (2) **`--model`** (required):  
+  Specifies the full model name.  
+  *Aliases:* `--model-full-name`, `--model_full_name`, `-n` (legacy/obsolete)  
+  **Example:**  
+  `--model simple_cnn_1_1`
+
+- (3) **`--dataset_name`** (optional):  
+  Specifies the name of the dataset.  
+  **Default:** `atsds_large`  
+  **Example:**  
+  `--dataset_name atsds_large`
+
+- (4) **`--dataset_split`** (optional):  
+  Indicates which dataset split to use (e.g., `train` or `test`).  
+  **Default:** `test`  
+  **Example:**  
+  `--dataset_split test`
+
+- (5) **`--random_seed`** (optional):  
+  An integer used to set the random seed for reproducibility.  
+  **Default:** `1414`  
+  **Example:**  
+  `--random_seed 1414`
+
 #### Additional calls:
 
 - Use a trained model to perform classification

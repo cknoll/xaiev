@@ -36,3 +36,15 @@ def do_gradcam_pipeline(*args, **kwargs):
 def do_int_g_pipeline(*args, **kwargs):
     from . import int_g_pipeline
     int_g_pipeline.main(*args, **kwargs)
+
+def do_xrai_pipeline(*args, **kwargs):
+    from . import Xrai_pipeline
+    Xrai_pipeline.main(*args, **kwargs)
+
+def do_lime_pipeline(*args, **kwargs):
+    from . import lime_pipeline
+    lime_pipeline.main(*args, **kwargs)
+
+def do_prism_pipeline(*args, **kwargs):
+    from . import PRISM_pipeline
+    PRISM_pipeline.main(*args, **kwargs)
