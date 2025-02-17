@@ -20,19 +20,12 @@ def main():
 
     parser.add_argument(
         "--model",
-
-        # TODO: remove these aliases after agreement on next meeting
-        "--model-full-name",
-        "--model_full_name",  # note: --model_full_name etc is accepted for legacy reasons only
-        "-n",  # obsolete (legacy)
         type=str,
         help="Full model name (e.g., simple_cnn_1_1)",
     )
 
     parser.add_argument(
         "--xai-method",
-        # TODO: remove these alias after agreement on next meeting
-        "--xai_method",
         type=str,
         help="specify the XAI method (e.g. gradcam, xrai, prism, lime)",
     )
