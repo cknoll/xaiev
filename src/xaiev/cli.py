@@ -57,8 +57,21 @@ def main():
         "--inference-mode", "-im", choices=["copy", "json"], default="copy"
     )
 
+    # This is handled by the respective command
+    # parser.add_argument(
+    #     "--create-xai-saliency-maps",
+    #     "-csm",
+    #     metavar="XAI_METHOD",
+    #     type=str,
+    #     help="choose an XAI method to create the saliency maps",
+    # )
+
     parser.add_argument(
         "--debug", action="store_true", help="start interactive debug mode; then exit"
+    )
+
+    parser.add_argument(
+        "--xai_method", type=str, help="Select XAI method"
     )
 
     args = parser.parse_args()
@@ -89,19 +102,19 @@ def main():
 
     elif args.command == "create-saliency-maps":
         utils.ensure_xai_method_and_model(args)
-        if args.xai_method == "gradcam":
-            # TODO: improve function name (indicate "create-saliency-maps")
-            core.do_gradcam(args.model, CONF)
-        elif args.xai_method == "xrai":
-            raise NotImplementedError("will be implemented soon")
-        elif args.xai_method == "prism":
-            raise NotImplementedError("will be implemented soon")
+        if args.xai_method == "int_g":
+            core.do_int_g_pipeline(args.model, CONF)
         elif args.xai_method == "lime":
-            raise NotImplementedError("will be implemented soon")
+            core.do_lime_pipeline(args.model, CONF)
+        elif args.xai_method == "xrai":
+            core.do_xrai_pipeline(args.model, CONF)
+        elif args.xai_method == "prism":
+            core.do_prism_pipeline(args.model, CONF)
+        elif args.xai_method == "gradcam":
+            # TODO: improve function name
+            core.do_gradcam_pipeline(args.model, CONF)
         else:
-            msg = f"Unknown xai method: '{args.xai_method}')"
-            print(utils.bred(msg))
-            exit(2)
+            raise NotImplementedError(msg)
 
     elif args.command == "create-eval-images":
         utils.ensure_xai_method_and_model(args)
