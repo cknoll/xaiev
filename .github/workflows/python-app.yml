@@ -8,6 +8,7 @@ on:
     branches:
     - main
     - test_ci
+    - CK_dev
   pull_request:
     branches:
     - main
@@ -41,7 +42,11 @@ jobs:
       run: |
         # install this package
         uv pip install --system -r requirements.txt
-        pip install -e .
+        uv pip install --system -e .
+
+    - name: get test-data
+      run: |
+        git clone https://github.com/cknoll/atsds-demo.git
 
     - name: run all tests
       run: |
@@ -49,6 +54,11 @@ jobs:
 
     - name: run some basic commands
       run: |
+        cd atsds-demo
         xaiev --help
         xaiev --version
         xaiev --bootstrap
+
+    # temporary debugging
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
