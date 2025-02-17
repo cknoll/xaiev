@@ -16,7 +16,10 @@ class CONF:
     INFERENCE_MODE: str
     DATASET_NAME: str
     DATASET_SPLIT: str
-    RANDOM_SEED : int
+    RANDOM_SEED: int
+    LIMIT: int
+    MODEL: str
+    XAI_METHOD: str
 
 def read_conf_from_dotenv() -> CONF:
     if not os.path.isfile(".env"):
@@ -39,6 +42,9 @@ def create_config(args) -> CONF:
     CONF.DATASET_NAME = args.dataset_name
     CONF.DATASET_SPLIT = args.dataset_split
     CONF.RANDOM_SEED = args.random_seed
+    CONF.LIMIT = args.limit
+    CONF.MODEL = args.model
+    CONF.XAI_METHOD = args.xai_method
 
     return CONF
 

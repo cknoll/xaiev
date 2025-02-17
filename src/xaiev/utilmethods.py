@@ -124,20 +124,29 @@ def generate_adversarial_examples(
     img_path,
     background_dir,
     xai_dir,
-    mask_condition
+    mask_condition,
+    limit: int,
 ):
     """
     Generate adversarial examples based on the given mask condition.
 
     """
+
+    if limit is not None:
+        assert isinstance(limit, int) and limit > 0
+    else:
+        # Note: `None` is a valid upper bound (-> no restriction)
+        pass
+
     for pct in pct_range:
         print(f"Processing percentage: {pct}%")
-        for category in categories:
+        for category in categories[:limit]:
             output_dir = os.path.join(adv_folder, str(pct), "test", category)
             os.makedirs(output_dir, exist_ok=True)
 
             images = image_dict[category]
-            for imagename in images:
+
+            for imagename in images[:limit]:
                 # Load original image and background
                 current_img = normalize_image(np.array(Image.open(os.path.join(img_path, category, imagename))))
                 current_background = normalize_image(np.array(Image.open(os.path.join(background_dir, category, imagename))))

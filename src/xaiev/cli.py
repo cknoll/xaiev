@@ -65,6 +65,12 @@ def main():
         "--inference-mode", "-im", choices=["copy", "json"], default="copy"
     )
 
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="limits the number of processed images (per class) to achieve faster testing",
+    )
+
     # This is handled by the respective command
     # parser.add_argument(
     #     "--create-xai-saliency-maps",
@@ -122,8 +128,8 @@ def main():
 
     elif args.command == "create-eval-images":
         utils.ensure_xai_method_and_model(args)
-        core.create_eval_images(conf=CONF, model=args.model, xai_method=args.xai_method)
+        core.create_eval_images(CONF)
 
     elif args.command == "eval":
         utils.ensure_xai_method_and_model(args)
-        core.do_evaluation(model=args.model, xai_method=args.xai_method)
+        core.do_evaluation(CONF)
