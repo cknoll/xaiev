@@ -22,8 +22,7 @@ def create_eval_dataset(
 ):
 
     # Paths for dataset and associated outputs
-    GROUND_TRUTH_DIR = get_dir_path(conf.XAIEV_BASE_DIR, f"{conf.DATASET_NAME}_mask", conf.DATASET_SPLIT)
-    BACKGROUND_DIR = get_dir_path(conf.XAIEV_BASE_DIR, f"{conf.DATASET_NAME}_background", conf.DATASET_SPLIT)
+    BACKGROUND_DIR = get_dir_path(conf.DATASET_BACKGROUND_DIR, conf.DATASET_SPLIT)
     DATASET_DIR = get_dir_path(conf.XAIEV_BASE_DIR, conf.DATASET_NAME, conf.DATASET_SPLIT)
     XAI_DIR = get_dir_path(
         conf.XAIEV_BASE_DIR, "XAI_results", conf.MODEL, conf.XAI_METHOD, conf.DATASET_SPLIT
