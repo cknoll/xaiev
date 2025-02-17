@@ -5,6 +5,7 @@ urllib3
 python-dotenv
 opencv-python
 ipydex
+python-dotenv
 
 # for prims xai algorithm
 torchprism

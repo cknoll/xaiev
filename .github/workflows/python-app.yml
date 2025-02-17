@@ -42,7 +42,9 @@ jobs:
       run: |
         # install this package
         uv pip install --system -r requirements.txt
-        uv pip install --system -e .
+        pip install -e .
+
+#    TODO: make this work (see __init__.py)
 
     - name: get test-data
       run: |
