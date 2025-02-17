@@ -195,7 +195,7 @@ class InferenceManager:
         for image_path in input_paths:
             res = self.predict_image(self.model, image_path, self.class_names, full_res=True)
 
-            # example: image_path = "/home/username/xaiev/data/atsds_large/test/00002/000096.png'"
+            # example: image_path = "/home/username/xaiev/data/atsds_large/dataset_main/test/00002/000096.png'"
             short_path = os.path.join(*image_path.split(os.path.sep)[-3:])
             class_dir = image_path.split(os.path.sep)[-2]
             boolean_result = (class_dir == res["class"])

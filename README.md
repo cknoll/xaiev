@@ -30,17 +30,18 @@ Example (see also .env-example):
 
 ```.env
 # Note: This directory might contain several GB of (auto-generated) data
-XAIEV_BASE_DIR="/home/username/xaiev/data"
+XAIEV_BASE_DIR="/home/username/xaiev/data/atsds_large"
 ```
 
 This file is evaluated by `utils.read_paths_from_dotenv()`. Note: The package `opencv-python` has to be installed (see `requirements.txt`)
 
 
-The expected path structure (assuming the dataset atsds_large) is as follows:
+The expected path structure is as follows (as shown in the dataset "atsds_large"):
 
 ```
-<BASE_DIR>                      specified in .env file
-├── atsds_large/
+<BASE_DIR>                      xaiev directory for one dataset (e.g.
+│                               atsds_large) specified in .env file
+├── dataset_main/               main images (not masks, not background)
 │   ├── test/
 │   │   ├── 0001/               class directory
 │   │   │   ├── 000000.png      individual image of this class
@@ -49,10 +50,10 @@ The expected path structure (assuming the dataset atsds_large) is as follows:
 │   └── train/
 │       └── <class dirs with image files>
 │
-├── atsds_large_background/...  background images with same structure
-│                               as in atsds_large (test/..., train/...)
+├── dataset_background/...      background images; same structure
+│                               as in dataset_main (test/..., train/...)
 │
-├── atsds_large_mask/...        corresponding mask images with same structure
+├── dataset_mask/..   .        corresponding mask images with same structure
 │                               as in atsds_large (test/..., train/...)
 ├── inference/
 │   ├── images_to_classify      directory for images which should be classified
@@ -60,7 +61,8 @@ The expected path structure (assuming the dataset atsds_large) is as follows:
 │       ├── simple_cnn_1_1      classification results for a specific model
 │       └── ...
 │
-├── model_checkpoints/
+├── model_checkpoints/          saved checkpoints for models trained on this
+│   │                           dataset
 │   ├── convnext_tiny_1_1.tar
 │   ├── resnet50_1_1.tar
 │   ├── simple_cnn_1_1.tar
@@ -113,19 +115,13 @@ The four steps of the pipeline (with example calls):
   **Example:**
   `--model simple_cnn_1_1`
 
-- (3) **`--dataset_name`** (optional):
-  Specifies the name of the dataset (see expected directory layout above).
-  **Default:** `atsds_large`
-  **Example:**
-  `--dataset_name atsds_large`
-
-- (4) **`--dataset_split`** (optional):
+- (3) **`--dataset_split`** (optional):
   Indicates which dataset part to use (e.g., `train` or `test`; see expected directory layout above).
   **Default:** `test`
   **Example:**
   `--dataset_split test`
 
-- (5) **`--random_seed`** (optional):
+- (4) **`--random_seed`** (optional):
   An integer used to set the random seed for reproducibility.
   **Default:** `1414`
   **Example:**

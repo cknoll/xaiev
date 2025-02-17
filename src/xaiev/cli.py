@@ -41,9 +41,10 @@ def main():
         '--version', action="store_true", help="print current version and exit"
     )
 
-    parser.add_argument(
-        '--dataset_name', type=str, default="atsds_large", help="Name of the dataset."
-    )
+    # TODO: with the new directory concept this is now obsolete (because specified by .env-path)
+    # parser.add_argument(
+    #     '--dataset_name', type=str, default="atsds_large", help="Name of the dataset."
+    # )
 
     parser.add_argument(
         '--dataset_split', type=str, default="test", help="Dataset split (e.g., 'train', 'test')."
