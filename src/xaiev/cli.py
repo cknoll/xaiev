@@ -20,6 +20,8 @@ def main():
 
     parser.add_argument(
         "--model",
+
+        # TODO: remove these aliases after agreement on next meeting
         "--model-full-name",
         "--model_full_name",  # note: --model_full_name etc is accepted for legacy reasons only
         "-n",  # obsolete (legacy)
@@ -27,7 +29,13 @@ def main():
         help="Full model name (e.g., simple_cnn_1_1)",
     )
 
-    parser.add_argument("--xai", type=str, help="specify the XAI method (e.g. gradcam, xrai, prism, lime)")
+    parser.add_argument(
+        "--xai-method",
+        # TODO: remove these alias after agreement on next meeting
+        "--xai_method",
+        type=str,
+        help="specify the XAI method (e.g. gradcam, xrai, prism, lime)",
+    )
 
     parser.add_argument(
         '--version', action="store_true", help="print current version and exit"
@@ -68,10 +76,6 @@ def main():
 
     parser.add_argument(
         "--debug", action="store_true", help="start interactive debug mode; then exit"
-    )
-
-    parser.add_argument(
-        "--xai_method", type=str, help="Select XAI method"
     )
 
     args = parser.parse_args()
@@ -118,8 +122,8 @@ def main():
 
     elif args.command == "create-eval-images":
         utils.ensure_xai_method_and_model(args)
-        core.create_eval_images(model=args.model, xai_method=args.xai)
+        core.create_eval_images(model=args.model, xai_method=args.xai_method)
 
     elif args.command == "eval":
         utils.ensure_xai_method_and_model(args)
-        core.do_evaluation(model=args.model, xai_method=args.xai)
+        core.do_evaluation(model=args.model, xai_method=args.xai_method)
