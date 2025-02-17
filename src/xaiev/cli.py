@@ -122,7 +122,7 @@ def main():
 
     elif args.command == "create-eval-images":
         utils.ensure_xai_method_and_model(args)
-        core.create_eval_images(model=args.model, xai_method=args.xai_method)
+        core.create_eval_images(conf=CONF, model=args.model, xai_method=args.xai_method)
 
     elif args.command == "eval":
         utils.ensure_xai_method_and_model(args)

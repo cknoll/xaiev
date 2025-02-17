@@ -53,8 +53,9 @@ def do_prism_pipeline(*args, **kwargs):
     PRISM_pipeline.main(*args, **kwargs)
 
 
-def create_eval_images(xai_method: str, model: str):
-    pass
+def create_eval_images(conf: utils.CONF, xai_method: str, model: str):
+    from . import eval_ds_creation
+    eval_ds_creation.create_revelation_dataset(conf, xai_method, model)
 
 
 def do_evaluation(xai_method: str, model: str):
