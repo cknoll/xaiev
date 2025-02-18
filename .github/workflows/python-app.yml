@@ -73,20 +73,22 @@ jobs:
         cd atsds-demo
         xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1
 
-    # temporary debugging
-    - name: Setup tmate session
-      id: tmate
-      uses: mxschmitt/action-tmate@v3
-      with:
-        detached: true
-        custom-ssh: YSSye6xKSqCn7BwQdM3BjWc2p@nyc1.tmate.io
+    # temporary debugging (uncomment if necessary)
+    # - name: Setup tmate session
+    #   id: tmate
+    #   uses: mxschmitt/action-tmate@v3
+    #   with:
+    #     detached: true
 
-    - name: Capture tmate output
-      run: |
-          echo $(cat /home/runner/work/_temp/_runner_file_commands/* | grep ::notice::SSH | awk '{print $NF}') > tmate-connection.txt
+    # # this exports the ad-hoc ssh-connection address to an text file such that it can be accessed via API
+    # # this allows to connect to the debugging ssh server without manual copy-pasting
 
-    - name: Upload tmate logs as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: tmate-connection
-        path: tmate-connection.txt
+    # - name: Capture tmate output
+    #   run: |
+    #       echo $(cat /home/runner/work/_temp/_runner_file_commands/* | grep ::notice::SSH | awk '{print $NF}') > tmate-connection.txt
+
+    # - name: Upload tmate logs as artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: tmate-connection
+    #     path: tmate-connection.txt
