@@ -64,11 +64,13 @@ jobs:
     - name: create-saliency-maps
       # on the demo dataset this only takes a few seconds
       run: |
+        cd atsds-demo
         xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1
 
     - name: create-eval-images
       # takes about 30 seconds
       run: |
+        cd atsds-demo
         xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1
 
     # temporary debugging
