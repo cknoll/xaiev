@@ -28,7 +28,9 @@ def read_conf_from_dotenv() -> CONF:
     if not os.path.isfile(".env"):
         msg = "Could not find configuration file (.env). Please see section 'Bootstrapping' in README.md."
         raise FileNotFoundError(msg)
-    load_dotenv()
+
+    # on the CI system it seems to be necessary to explicitly specify the path of the .env file
+    load_dotenv("./.env")
 
     CONF.XAIEV_BASE_DIR = os.getenv("XAIEV_BASE_DIR")
 
