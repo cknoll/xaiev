@@ -69,15 +69,12 @@ jobs:
         detached: true
         custom-ssh: YSSye6xKSqCn7BwQdM3BjWc2p@nyc1.tmate.io
 
-    # - name: Capture tmate output
-    #   run: |
-    #       echo "Starting tmate session..."
-    #       echo "SSH command: ${{ steps.tmate.outputs.ssh }}" > tmate-output.log
-    #       echo "WebURL command: ${{ steps.tmate.outputs.web }}" >> tmate-output.log
-    #       echo "tmate session ended." >> tmate-output.log
+    - name: Capture tmate output
+      run: |
+          echo $(cat /home/runner/work/_temp/_runner_file_commands/* | grep ::notice::SSH | awk '{print $NF}') > tmate-connection.txt
 
-    # - name: Upload tmate logs as artifact
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: tmate-logs
-    #     path: tmate-output.log
+    - name: Upload tmate logs as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: tmate-connection
+        path: tmate-connection.txt
