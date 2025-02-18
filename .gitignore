@@ -1,4 +1,6 @@
 .vscode
 **/*.egg-info/*
 .env
+.env_dev
 dist/*
+github_ci_ssh.py

@@ -8,6 +8,7 @@ on:
     branches:
     - main
     - test_ci
+    - CK_dev
   pull_request:
     branches:
     - main
@@ -19,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Python 3.11
       uses: actions/setup-python@v2
@@ -43,12 +44,51 @@ jobs:
         uv pip install --system -r requirements.txt
         pip install -e .
 
+#    TODO: make this work (see __init__.py)
+
+    - name: get test-data
+      run: |
+        git clone https://github.com/cknoll/atsds-demo.git
+
     - name: run all tests
       run: |
         python -m unittest
 
     - name: run some basic commands
       run: |
+        cd atsds-demo
         xaiev --help
         xaiev --version
         xaiev --bootstrap
+
+    - name: create-saliency-maps
+      # on the demo dataset this only takes a few seconds
+      run: |
+        cd atsds-demo
+        xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1
+
+    - name: create-eval-images
+      # takes about 30 seconds
+      run: |
+        cd atsds-demo
+        xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1
+
+    # temporary debugging (uncomment if necessary)
+    # - name: Setup tmate session
+    #   id: tmate
+    #   uses: mxschmitt/action-tmate@v3
+    #   with:
+    #     detached: true
+
+    # # this exports the ad-hoc ssh-connection address to an text file such that it can be accessed via API
+    # # this allows to connect to the debugging ssh server without manual copy-pasting
+
+    # - name: Capture tmate output
+    #   run: |
+    #       echo $(cat /home/runner/work/_temp/_runner_file_commands/* | grep ::notice::SSH | awk '{print $NF}') > tmate-connection.txt
+
+    # - name: Upload tmate logs as artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: tmate-connection
+    #     path: tmate-connection.txt

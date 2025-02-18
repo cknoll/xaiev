@@ -20,29 +20,18 @@ def main():
 
     parser.add_argument(
         "--model",
-
-        # TODO: remove these aliases after agreement on next meeting
-        "--model-full-name",
-        "--model_full_name",  # note: --model_full_name etc is accepted for legacy reasons only
-        "-n",  # obsolete (legacy)
         type=str,
         help="Full model name (e.g., simple_cnn_1_1)",
     )
 
     parser.add_argument(
         "--xai-method",
-        # TODO: remove these alias after agreement on next meeting
-        "--xai_method",
         type=str,
         help="specify the XAI method (e.g. gradcam, xrai, prism, lime)",
     )
 
     parser.add_argument(
         '--version', action="store_true", help="print current version and exit"
-    )
-
-    parser.add_argument(
-        '--dataset_name', type=str, default="atsds_large", help="Name of the dataset."
     )
 
     parser.add_argument(
@@ -71,14 +60,6 @@ def main():
         help="limits the number of processed images (per class) to achieve faster testing",
     )
 
-    # This is handled by the respective command
-    # parser.add_argument(
-    #     "--create-xai-saliency-maps",
-    #     "-csm",
-    #     metavar="XAI_METHOD",
-    #     type=str,
-    #     help="choose an XAI method to create the saliency maps",
-    # )
 
     parser.add_argument(
         "--debug", action="store_true", help="start interactive debug mode; then exit"

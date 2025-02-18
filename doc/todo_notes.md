@@ -2,6 +2,11 @@ This file serves as easy to use internal issue and idea tracker.
 
 # Issues (and required features)
 
+- [ ] #i8: implement unittests for steps (check existence of files)
+- [ ] #i7: add `xaiev eval ...` commands
+- [x] #i6: simplify CI debugging
+- [x] #i5: rename atsds-directories in README and scripts
+- [x] #i4: create small publishable test-dataset (atsds_demo)
 - [x] #i3: add --limit flag to limit the processing of images (for faster testing)
 - [x] #i2: make inference work from `xaiev --inference simple_cnn_1_1`
 - [x] #i1: add `xaiev --bootstrap` (to create .env file in current working directory)

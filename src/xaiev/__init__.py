@@ -14,6 +14,7 @@ except ImportError:
     import os
 
     # detect whether installation is running
+    # TODO: This does not work with `uv pip install -e .`
     if "PIP_BUILD_TRACKER" in os.environ:
         pass
     else:
