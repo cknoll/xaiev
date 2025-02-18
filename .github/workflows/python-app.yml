@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Set up Python 3.11
       uses: actions/setup-python@v2
@@ -63,4 +63,18 @@ jobs:
 
     # temporary debugging
     - name: Setup tmate session
+      id: tmate
       uses: mxschmitt/action-tmate@v3
+      with:
+        detached: true
+      run: |
+          echo "Starting tmate session..."
+          echo "SSH command: ${{ steps.tmate.outputs.ssh }}" > tmate-output.log
+          echo "WebURL command: ${{ steps.tmate.outputs.web }}" >> tmate-output.log
+          echo "tmate session ended." >> tmate-output.log
+
+    - name: Upload tmate logs as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: tmate-logs
+        path: tmate-output.log

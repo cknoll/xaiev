@@ -2,4 +2,4 @@
 **/*.egg-info/*
 .env
 dist/*
-github_ci_ssh.sh
+github_ci_ssh.py
