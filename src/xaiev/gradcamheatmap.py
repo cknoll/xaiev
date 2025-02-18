@@ -72,20 +72,23 @@ def generate_gradcam_visualizations(model: torch.nn.Module, device: torch.device
                 save_xai_outputs(mask, np.array(img), category, image_name, output_path)
 
 def main(model_full_name, conf: utils.CONF):
-    
+
     BASE_DIR = conf.XAIEV_BASE_DIR
     CHECKPOINT_PATH = conf.MODEL_CP_PATH
 
-    # Changable Parameters
+    # Changeable Parameters
     model_name = "_".join(model_full_name.split("_")[:-2])
     model_cpt = model_full_name + ".tar"
-   
+
     dataset_type = conf.DATASET_NAME
     dataset_split = conf.DATASET_SPLIT
     random_seed = conf.RANDOM_SEED
 
     IMAGES_PATH = pjoin(BASE_DIR, dataset_type, dataset_split)
-    output_path = pjoin(BASE_DIR, "XAI_results", model_name, "gradcam", dataset_split)
+
+    # DISCUSS: we use `model_full_name` now for the output path
+    # output_path = pjoin(BASE_DIR, "XAI_results", model_name, "gradcam", dataset_split)
+    output_path = pjoin(BASE_DIR, "XAI_results", model_full_name, "gradcam", dataset_split)
 
     # Setup environment
     device = setup_environment(random_seed)
