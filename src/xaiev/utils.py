@@ -38,12 +38,12 @@ def read_conf_from_dotenv() -> CONF:
 
 def create_config(args) -> CONF:
     read_conf_from_dotenv()  # manipulate global variable CONF
-    CONF.DATA_SET_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "dataset_main")
+    CONF.DATA_SET_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_main")
 
     # the following names are now hardcoded (according to directory structure specified in README)
-    CONF.DATASET_NAME = "dataset_main"
-    CONF.DATASET_BACKGROUND_DIR = os.path.join(CONF.XAIEV_BASE_DIR, "dataset_background")
-    CONF.DATASET_MASK = os.path.join(CONF.XAIEV_BASE_DIR, "dataset_mask")
+    CONF.DATASET_NAME = "imgs_main"
+    CONF.DATASET_BACKGROUND_DIR = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_background")
+    CONF.DATASET_MASK = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_mask")
 
     CONF.MODEL_CP_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "model_checkpoints")
     CONF.INFERENCE_DATA_BASE_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "inference")
