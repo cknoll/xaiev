@@ -76,7 +76,7 @@ jobs:
           echo "tmate session ended." >> tmate-output.log
 
     - name: Upload tmate logs as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: tmate-logs
         path: tmate-output.log
