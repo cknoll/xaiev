@@ -60,14 +60,6 @@ def main():
         help="limits the number of processed images (per class) to achieve faster testing",
     )
 
-    # This is handled by the respective command
-    # parser.add_argument(
-    #     "--create-xai-saliency-maps",
-    #     "-csm",
-    #     metavar="XAI_METHOD",
-    #     type=str,
-    #     help="choose an XAI method to create the saliency maps",
-    # )
 
     parser.add_argument(
         "--debug", action="store_true", help="start interactive debug mode; then exit"
