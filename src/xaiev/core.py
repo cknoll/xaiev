@@ -59,5 +59,6 @@ def create_eval_images(conf: utils.CONF):
     eval_ds_creation.create_occlusion_dataset(conf)
 
 
-def do_evaluation(xai_method: str, model: str):
-    pass
+def do_evaluation(conf: utils.CONF):
+    from . import evaluation
+    evaluation.main_occlusion(conf)

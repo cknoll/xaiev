@@ -24,6 +24,7 @@ class CONF:
     LIMIT: int
     MODEL: str
     XAI_METHOD: str
+    EVAL_DATA_BASE_PATH: str
     EVAL_DATA_PATH: str
     EVAL_RESULT_DATA_PATH: str
     EVAL_METHOD: str
@@ -63,16 +64,15 @@ def create_config(args) -> CONF:
     CONF.EVAL_METHOD = args.eval_method
 
     if CONF.MODEL and CONF.XAI_METHOD:
-        eval_path = os.path.join(
+        CONF.EVAL_DATA_BASE_PATH = os.path.join(
             CONF.XAIEV_BASE_DIR,
             "XAI_evaluation",
             CONF.MODEL,
             CONF.XAI_METHOD,
-            CONF.EVAL_METHOD,
             CONF.DATASET_SPLIT,
         )
-        CONF.EVAL_DATA_PATH = eval_path
-        CONF.EVAL_RESULT_DATA_PATH = os.path.join(eval_path, "results.pcl")
+        CONF.EVAL_DATA_PATH = os.path.join(CONF.EVAL_DATA_BASE_PATH, CONF.EVAL_METHOD)
+        CONF.EVAL_RESULT_DATA_PATH = os.path.join(CONF.EVAL_DATA_PATH, "results.pcl")
 
     return CONF
 

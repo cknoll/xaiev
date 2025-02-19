@@ -49,13 +49,16 @@ def main_occlusion(conf: utils.CONF):
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 
     # Define paths using os.path.join for better cross-platform compatibility
-    DATASET_PATH = os.path.join("data", "auswertung_hpc", "auswertung")
+    # DATASET_PATH = os.path.join("data", "auswertung_hpc", "auswertung")
+    DATASET_PATH = conf.EVAL_DATA_PATH
     MODEL_NAME = conf.MODEL
-    XAI_NAME = conf.XAI_METHOD
-    ADV_PCT = "10"
-    dataset_type = os.path.join("occlusion", "10")
-    dataset_split = conf.DATASET_SPLIT
-    ROOT_PATH = os.path.join(DATASET_PATH, MODEL_NAME, XAI_NAME)
+
+    # ADV_PCT = "10"
+    # dataset_type = os.path.join("occlusion", "10")
+    # dataset_split = conf.DATASET_SPLIT
+
+    # this is the directory which contains the percentage subdirs (which contain the images)
+    ROOT_PATH = conf.EVAL_DATA_PATH
 
     RANDOM_SEED = conf.RANDOM_SEED
 
@@ -71,8 +74,10 @@ def main_occlusion(conf: utils.CONF):
     device = torch.device("cpu") if not torch.cuda.is_available() else torch.device("cuda:0")
     print("Using device", device)
 
-    testset = ATSDS(root=ROOT_PATH, split=dataset_split, dataset_type=dataset_type, transform=transform_test)
-    testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
+    # load dataset for fixed percentage to get number of classes
+    data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
+    testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
+    # testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
 
     # ---
 
@@ -106,7 +111,7 @@ def main_occlusion(conf: utils.CONF):
         # Iterate over occlusion percentages
         for pct in range(10,101,10):
             dataset_type = os.path.join("occlusion", str(pct))
-            testset = ATSDS(root=ROOT_PATH, split=dataset_split, dataset_type=dataset_type, transform=transform_test)
+            testset = ATSDS(root=ROOT_PATH, split=None, dataset_type=None, transform=transform_test)
             testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
             c,c_5,t,loss,softmaxes,scores = test_model(model,testloader,loss_criterion, device)
             c_list.append(c)
