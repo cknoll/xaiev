@@ -1,4 +1,3 @@
-## Standard libraries
 import os
 import json
 import math
@@ -8,7 +7,7 @@ import pickle
 # 3rd party libraries
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
+from ipydex import IPS
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 CUDA_LAUNCH_BLOCKING=1
@@ -26,6 +25,10 @@ from .ATSDS import ATSDS
 from .gradcam import get_gradcam
 from .model import get_model, load_model, test_model
 from . import utils
+
+# TODO: unify common parts of both functions
+def main_revelation(conf: utils.CONF):
+    raise NotImplementedError()
 
 
 def main_occlusion(conf: utils.CONF):
@@ -57,9 +60,6 @@ def main_occlusion(conf: utils.CONF):
     # dataset_type = os.path.join("occlusion", "10")
     # dataset_split = conf.DATASET_SPLIT
 
-    # this is the directory which contains the percentage subdirs (which contain the images)
-    ROOT_PATH = conf.EVAL_DATA_PATH
-
     RANDOM_SEED = conf.RANDOM_SEED
 
     # ---
@@ -75,6 +75,9 @@ def main_occlusion(conf: utils.CONF):
     print("Using device", device)
 
     # load dataset for fixed percentage to get number of classes
+    # conf.EVAL_DATA_PATH is the directory which contains the percentage subdirs
+    # (which contain the class-dirs which contain the images)
+
     data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
     testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
     # testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
@@ -87,6 +90,7 @@ def main_occlusion(conf: utils.CONF):
     optimizer = optim.Adam(model.parameters())
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,200)
 
+    # load the model weights
     epoch, trainstats = load_model(model, optimizer, scheduler, conf.MODEL_PATH, device)
     train_loss = trainstats[0]
     test_loss = trainstats[1]
@@ -101,7 +105,6 @@ def main_occlusion(conf: utils.CONF):
 
     # TODO: drop outer loop
     for current_method in xai_methods:
-        ROOT_PATH = os.path.join(DATASET_PATH, MODEL_NAME, current_method)
         c_list = []
         c_5_list = []
         softmaxes_list = []
@@ -109,9 +112,9 @@ def main_occlusion(conf: utils.CONF):
         losses = []
 
         # Iterate over occlusion percentages
-        for pct in range(10,101,10):
-            dataset_type = os.path.join("occlusion", str(pct))
-            testset = ATSDS(root=ROOT_PATH, split=None, dataset_type=None, transform=transform_test)
+        for pct in range(10, 101, 10):
+            data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
+            testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
             testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
             c,c_5,t,loss,softmaxes,scores = test_model(model,testloader,loss_criterion, device)
             c_list.append(c)

@@ -116,6 +116,7 @@ def get_default_arg_parser() -> argparse.ArgumentParser:
 
     return parser
 
+# TODO: rename "category" to "class_" etc.
 def generate_adversarial_examples(
     adv_folder,
     pct_range,
@@ -140,8 +141,9 @@ def generate_adversarial_examples(
 
     for pct in pct_range:
         print(f"Processing percentage: {pct}%")
-        for category in categories[:limit]:
-            output_dir = os.path.join(adv_folder, str(pct), "test", category)
+        # note: we do not apply the limit here because the trained model requires all classes to be present
+        for category in categories:
+            output_dir = os.path.join(adv_folder, str(pct), category)
             os.makedirs(output_dir, exist_ok=True)
 
             images = image_dict[category]

@@ -61,4 +61,9 @@ def create_eval_images(conf: utils.CONF):
 
 def do_evaluation(conf: utils.CONF):
     from . import evaluation
-    evaluation.main_occlusion(conf)
+    if conf.EVAL_METHOD == "revelation":
+        evaluation.main_occlusion(conf)
+    elif conf.EVAL_METHOD == "occlusion":
+        evaluation.main_occlusion(conf)
+    else:
+        raise ValueError(f"unexpected evaluation method: {conf.EVAL_METHOD}")
