@@ -39,7 +39,7 @@ This file is evaluated by `utils.read_paths_from_dotenv()`. Note: The package `o
 The expected path structure is as follows (as shown in the dataset "atsds_large"):
 
 ```
-<BASE_DIR>                      xaiev directory for one dataset (e.g.
+<XAIEV_BASE_DIR>                      xaiev directory for one dataset (e.g.
 │                               atsds_large) specified in .env file
 ├── imgs_main/                  main images (not masks, not background)
 │   ├── test/
