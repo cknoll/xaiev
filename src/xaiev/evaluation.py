@@ -27,42 +27,27 @@ from .model import get_model, load_model, test_model
 from . import utils
 
 # TODO: unify common parts of both functions
-def main_revelation(conf: utils.CONF):
-    raise NotImplementedError()
+def eval_revelation(conf: utils.CONF):
+    _evaluation(conf, range(0, 101, 10))
 
 
-def main_occlusion(conf: utils.CONF):
+def eval_occlusion(conf: utils.CONF):
+    _evaluation(conf, range(10, 101, 10))
+
+
+def _evaluation(conf: utils.CONF, percentage_range: list[int]):
     """
-    Main functionality copied from the original notebook
+    Main functionality copied from the original notebooks
     """
 
     # Define transformations for the train and test dataset
-    transform_train = transforms.Compose(
-        [transforms.Resize(256),
-        transforms.RandomCrop(size=(224,224)),
-        transforms.RandomHorizontalFlip(p=0.5),
-        transforms.RandomRotation(degrees=30),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-
     transform_test = transforms.Compose(
         [transforms.Resize(256),
         transforms.CenterCrop(size=(224,224)),
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 
-    # Define paths using os.path.join for better cross-platform compatibility
-    # DATASET_PATH = os.path.join("data", "auswertung_hpc", "auswertung")
-    DATASET_PATH = conf.EVAL_DATA_PATH
-    MODEL_NAME = conf.MODEL
-
-    # ADV_PCT = "10"
-    # dataset_type = os.path.join("occlusion", "10")
-    # dataset_split = conf.DATASET_SPLIT
-
     RANDOM_SEED = conf.RANDOM_SEED
-
-    # ---
 
     torch.manual_seed(RANDOM_SEED)
     random.seed(RANDOM_SEED)
@@ -80,9 +65,6 @@ def main_occlusion(conf: utils.CONF):
 
     data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
     testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
-    # testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
-
-    # ---
 
     model = get_model(conf.MODEL, n_classes=testset.get_num_classes())
     model = model.to(device)
@@ -103,8 +85,6 @@ def main_occlusion(conf: utils.CONF):
 
     performance_xai_type = {}
 
-    # ---
-
     # TODO: drop outer loop
     for current_method in xai_methods:
         c_list = []
@@ -113,8 +93,8 @@ def main_occlusion(conf: utils.CONF):
         scores_list = []
         losses = []
 
-        # Iterate over occlusion percentages
-        for pct in range(10, 101, 10):
+        # Iterate over percentages
+        for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
             testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
@@ -127,15 +107,13 @@ def main_occlusion(conf: utils.CONF):
 
     total = t
 
-    # ---
-
     # Save the performance_xai_type dictionary to a pickle file
     dic_save_path = conf.EVAL_RESULT_DATA_PATH
     with open(dic_save_path, 'wb') as f:
         pickle.dump(performance_xai_type, f)
 
 
-def visualize_occlusion(conf: utils.CONF, xai_methods: list[str] = None):
+def visualize_evaluation(conf: utils.CONF, xai_methods: list[str] = None):
 
     # Load the performance_xai_type dictionary from the pickle file
     dic_load_path = conf.EVAL_RESULT_DATA_PATH
@@ -144,7 +122,6 @@ def visualize_occlusion(conf: utils.CONF, xai_methods: list[str] = None):
 
     if xai_methods is None:
         xai_methods = [conf.XAI_METHOD]
-
 
     accuracies = []
     for current_method in xai_methods:
