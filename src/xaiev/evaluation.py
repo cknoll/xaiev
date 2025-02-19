@@ -92,12 +92,14 @@ def main_occlusion(conf: utils.CONF):
 
     # load the model weights
     epoch, trainstats = load_model(model, optimizer, scheduler, conf.MODEL_PATH, device)
-    train_loss = trainstats[0]
-    test_loss = trainstats[1]
-    train_stats= trainstats[2]
+
+    # might be useful for debugging/reporting
+    # train_loss = trainstats[0]
+    # test_loss = trainstats[1]
+    # train_stats = trainstats[2]
 
     # xai_methods = ["gradcam","ig_fixpoints","lime","prism","xrai"]
-    xai_methods = [conf.EVAL_METHOD]
+    xai_methods = [conf.XAI_METHOD]
 
     performance_xai_type = {}
 
@@ -133,12 +135,16 @@ def main_occlusion(conf: utils.CONF):
         pickle.dump(performance_xai_type, f)
 
 
-def visualize_occlusion(conf: utils.CONF, xai_methods: list[str]):
+def visualize_occlusion(conf: utils.CONF, xai_methods: list[str] = None):
 
     # Load the performance_xai_type dictionary from the pickle file
     dic_load_path = conf.EVAL_RESULT_DATA_PATH
     with open(dic_load_path, 'rb') as f:
         performance_xai_type = pickle.load(f)
+
+    if xai_methods is None:
+        xai_methods = [conf.XAI_METHOD]
+
 
     accuracies = []
     for current_method in xai_methods:
@@ -149,3 +155,4 @@ def visualize_occlusion(conf: utils.CONF, xai_methods: list[str]):
     for i, entry in enumerate(accuracies):
         plt.plot(entry)
         plt.legend(xai_methods)
+        plt.savefig(dic_load_path.replace(".pcl", ".png"))
