@@ -55,6 +55,10 @@ def main():
     )
 
     parser.add_argument(
+        "--eval-method", choices=["revelation", "occlusion"], default="revelation"
+    )
+
+    parser.add_argument(
         "--limit",
         type=int,
         help="limits the number of processed images (per class) to achieve faster testing",

@@ -15,6 +15,7 @@ class CONF:
     DATASET_BACKGROUND_DIR: str
     DATASET_MASK: str
     MODEL_CP_PATH: str
+    MODEL_PATH: str
     INFERENCE_DATA_BASE_PATH: str
     INFERENCE_MODE: str
     DATASET_NAME: str
@@ -23,6 +24,9 @@ class CONF:
     LIMIT: int
     MODEL: str
     XAI_METHOD: str
+    EVAL_DATA_PATH: str
+    EVAL_RESULT_DATA_PATH: str
+    EVAL_METHOD: str
 
 def read_conf_from_dotenv() -> CONF:
     if not os.path.isfile(".env"):
@@ -54,7 +58,21 @@ def create_config(args) -> CONF:
     CONF.RANDOM_SEED = args.random_seed
     CONF.LIMIT = args.limit
     CONF.MODEL = args.model
+    CONF.MODEL_PATH = os.path.join(CONF.MODEL_CP_PATH, f"{CONF.MODEL}.tar")
     CONF.XAI_METHOD = args.xai_method
+    CONF.EVAL_METHOD = args.eval_method
+
+    if CONF.MODEL and CONF.XAI_METHOD:
+        eval_path = os.path.join(
+            CONF.XAIEV_BASE_DIR,
+            "XAI_evaluation",
+            CONF.MODEL,
+            CONF.XAI_METHOD,
+            CONF.EVAL_METHOD,
+            CONF.DATASET_SPLIT,
+        )
+        CONF.EVAL_DATA_PATH = eval_path
+        CONF.EVAL_RESULT_DATA_PATH = os.path.join(eval_path, "results.pcl")
 
     return CONF
 

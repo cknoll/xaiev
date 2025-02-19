@@ -2,6 +2,7 @@ This file serves as easy to use internal issue and idea tracker.
 
 # Issues (and required features)
 
+- [ ] #i9: resolve conflict between model_name and model_full_name (eg. simple_cnn vs simple_cnn_1_1) in README and code
 - [ ] #i8: implement unittests for steps (check existence of files)
 - [ ] #i7: add `xaiev eval ...` commands
 - [x] #i6: simplify CI debugging
