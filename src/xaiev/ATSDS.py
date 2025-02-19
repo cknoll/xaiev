@@ -8,6 +8,7 @@ from torchvision.datasets.folder import make_dataset
 from torchvision.datasets.utils import download_and_extract_archive, verify_str_arg
 from torchvision.datasets.vision import VisionDataset
 
+# TODO: rename this class (and file) to XAIEV_Dataset (ATSDS is only one possible dataset)
 class ATSDS(VisionDataset):
     """`Augmented Data using Traffic signs from the German Traffic Sign Recognition Benchmark (GTSRB) <https://benchmark.ini.rub.de/>`_ Dataset.
 
@@ -25,6 +26,8 @@ class ATSDS(VisionDataset):
     def __init__(
         self,
         root: str,
+
+        # TODO: remove hardcoded reference to atsds
         dataset_type = "atsds_large",
         split: str = "train",
         transform: Optional[Callable] = None,
@@ -36,23 +39,29 @@ class ATSDS(VisionDataset):
         self._split = split
         self._dataset_type = dataset_type # no verify be careful.
 
-            
-        self._base_folder = pathlib.Path(root) / dataset_type
-        self._target_folder = (
-            self._base_folder / self._split
-        )
+        if dataset_type is None:
+            # this should be the new default
+            self._base_folder = pathlib.Path(root)
+            if split is None:
+                self._target_folder = self._base_folder
+            else:
+                self._base_folder / self._split
+        else:
+            self._base_folder = pathlib.Path(root) / dataset_type
+            self._target_folder = (
+                self._base_folder / self._split
+            )
         print(self._target_folder)
-
 
         if not self._check_exists():
             print(self._target_folder)
-            raise RuntimeError("Dataset not found. You can use download=True to download it")
+            msg = (
+                f"Dataset not found at {self._target_folder}.\n"
+                "See README.md and check your path configuration."
+            )
+            raise RuntimeError(msg)
 
-        if self._split == "train":
-            samples = make_dataset(str(self._target_folder), extensions=(".png",))
-        else:
-            samples = make_dataset(str(self._target_folder), extensions = (".png",))      
-
+        samples = make_dataset(str(self._target_folder), extensions=(".png",))
 
         self._samples = samples
         self.transform = transform
@@ -61,15 +70,11 @@ class ATSDS(VisionDataset):
     def __len__(self) -> int:
         return len(self._samples)
 
-
     def get_classes(self) -> int:
         return sorted(np.unique(np.array(self._samples)[:,1]))
 
     def get_num_classes(self) -> int:
         return len(np.unique(np.array(self._samples)[:,1]))
-
-
-
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
 
@@ -86,4 +91,3 @@ class ATSDS(VisionDataset):
 
     def _check_exists(self) -> bool:
         return self._target_folder.is_dir()
-
