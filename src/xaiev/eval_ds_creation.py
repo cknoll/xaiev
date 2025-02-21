@@ -1,6 +1,8 @@
+import os
+from ipydex import IPS
+
 from . import utils
 from .utilmethods import get_dir_path, create_image_dict, generate_adversarial_examples
-from ipydex import IPS
 
 
 def create_occlusion_dataset(conf: utils.CONF):
@@ -23,13 +25,13 @@ def create_eval_dataset(
 
     # Paths for dataset and associated outputs
     BACKGROUND_DIR = get_dir_path(conf.DATASET_BACKGROUND_DIR, conf.DATASET_SPLIT)
-    DATASET_DIR = get_dir_path(conf.XAIEV_BASE_DIR, conf.DATASET_NAME, conf.DATASET_SPLIT)
+
+    # TODO: improve naming (including/excluding train/test-split)
+    DATASET_DIR = get_dir_path(conf.DATA_SET_PATH, conf.DATASET_SPLIT)
     XAI_DIR = get_dir_path(
         conf.XAIEV_BASE_DIR, "XAI_results", conf.MODEL, conf.XAI_METHOD, conf.DATASET_SPLIT
     )
-    ADV_FOLDER = get_dir_path(
-        conf.XAIEV_BASE_DIR, "XAI_evaluation", conf.MODEL, conf.XAI_METHOD,  eval_method, check_exists=False
-    )
+    ADV_FOLDER = os.path.join(conf.EVAL_DATA_BASE_PATH, eval_method)
 
     CATEGORIES, image_dict = create_image_dict(conf.XAIEV_BASE_DIR, conf.DATASET_NAME, conf.DATASET_SPLIT)
     print(CATEGORIES)

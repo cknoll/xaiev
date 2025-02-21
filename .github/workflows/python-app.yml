@@ -65,13 +65,35 @@ jobs:
       # on the demo dataset this only takes a few seconds
       run: |
         cd atsds-demo
+        test ! -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
         xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1
+        test -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
 
-    - name: create-eval-images
+    - name: create-eval-images and test presence of one image
       # takes about 30 seconds
       run: |
         cd atsds-demo
+        test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
         xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1
+        test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
+
+
+    - name: do basic evaluation (1) and check result file exists
+      # takes about 30 seconds
+      run: |
+        cd atsds-demo
+        test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
+        xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method revelation
+        test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
+
+
+    - name: do basic evaluation (2) and check result file exists
+      # takes about 30 seconds
+      run: |
+        cd atsds-demo
+        test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/results.png
+        xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method occlusion
+        test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/results.png
 
     # temporary debugging (uncomment if necessary)
     # - name: Setup tmate session

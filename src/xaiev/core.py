@@ -59,5 +59,13 @@ def create_eval_images(conf: utils.CONF):
     eval_ds_creation.create_occlusion_dataset(conf)
 
 
-def do_evaluation(xai_method: str, model: str):
-    pass
+def do_evaluation(conf: utils.CONF):
+    from . import evaluation
+    if conf.EVAL_METHOD == "revelation":
+        evaluation.eval_revelation(conf)
+        evaluation.visualize_evaluation(conf)
+    elif conf.EVAL_METHOD == "occlusion":
+        evaluation.eval_occlusion(conf)
+        evaluation.visualize_evaluation(conf)
+    else:
+        raise ValueError(f"unexpected evaluation method: {conf.EVAL_METHOD}")

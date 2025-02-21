@@ -6,6 +6,10 @@ import torchvision.models
 
 
 def get_model(model_name, n_classes):
+
+    # drop extensions like "_1_1"
+    model_name = get_short_model_name(model_name)
+
     if (model_name == "resnet18"):
         base_model = torchvision.models.resnet18()
         classifier_layer = torch.nn.Linear(in_features=512,out_features=n_classes,bias=True)
@@ -76,6 +80,20 @@ def get_model(model_name, n_classes):
         return SimpleCNN(n_classes)
     if(model_name == "advanced_cnn"):
         return ImprovedCNN(n_classes)
+
+
+def get_short_model_name(model_full_name):
+    """
+    Convert "simple_cnn_1_1" to "simple_cnn" etc.
+    """
+    import re
+
+    re_match = re.match("(.*?)_[_\d]+", model_full_name)
+    if re_match:
+        return re_match.groups(1)[0]
+    else:
+        return model_full_name
+
 
 def load_model(model, optimizer, scheduler, filepath, device):
     # cpt = torch.load(filepath, map_location=torch.device('cpu'), weights_only=False)
