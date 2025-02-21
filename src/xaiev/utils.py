@@ -18,7 +18,6 @@ class CONF:
     MODEL_PATH: str
     INFERENCE_DATA_BASE_PATH: str
     INFERENCE_MODE: str
-    DATASET_NAME: str
     DATASET_SPLIT: str
     RANDOM_SEED: int
     LIMIT: int
