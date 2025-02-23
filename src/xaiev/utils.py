@@ -11,18 +11,30 @@ from dataclasses import dataclass
 class CONF:
     XAIEV_BASE_DIR: str
     DATA_SET_PATH: str
+    DATASET_NAME: str
+    DATASET_BACKGROUND_DIR: str
+    DATASET_MASK: str
     MODEL_CP_PATH: str
+    MODEL_PATH: str
     INFERENCE_DATA_BASE_PATH: str
     INFERENCE_MODE: str
-    DATASET_NAME: str
     DATASET_SPLIT: str
-    RANDOM_SEED : int
+    RANDOM_SEED: int
+    LIMIT: int
+    MODEL: str
+    XAI_METHOD: str
+    EVAL_DATA_BASE_PATH: str
+    EVAL_DATA_PATH: str
+    EVAL_RESULT_DATA_PATH: str
+    EVAL_METHOD: str
 
 def read_conf_from_dotenv() -> CONF:
     if not os.path.isfile(".env"):
         msg = "Could not find configuration file (.env). Please see section 'Bootstrapping' in README.md."
         raise FileNotFoundError(msg)
-    load_dotenv()
+
+    # on the CI system it seems to be necessary to explicitly specify the path of the .env file
+    load_dotenv("./.env")
 
     CONF.XAIEV_BASE_DIR = os.getenv("XAIEV_BASE_DIR")
 
@@ -32,13 +44,34 @@ def read_conf_from_dotenv() -> CONF:
 
 def create_config(args) -> CONF:
     read_conf_from_dotenv()  # manipulate global variable CONF
-    CONF.DATA_SET_PATH = os.path.join(CONF.XAIEV_BASE_DIR, args.dataset_name)
+    CONF.DATA_SET_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_main")
+
+    # the following names are now hardcoded (according to directory structure specified in README)
+    CONF.DATASET_NAME = "imgs_main"
+    CONF.DATASET_BACKGROUND_DIR = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_background")
+    CONF.DATASET_MASK = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_mask")
+
     CONF.MODEL_CP_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "model_checkpoints")
     CONF.INFERENCE_DATA_BASE_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "inference")
     CONF.INFERENCE_MODE = args.inference_mode
-    CONF.DATASET_NAME = args.dataset_name
     CONF.DATASET_SPLIT = args.dataset_split
     CONF.RANDOM_SEED = args.random_seed
+    CONF.LIMIT = args.limit
+    CONF.MODEL = args.model
+    CONF.MODEL_PATH = os.path.join(CONF.MODEL_CP_PATH, f"{CONF.MODEL}.tar")
+    CONF.XAI_METHOD = args.xai_method
+    CONF.EVAL_METHOD = args.eval_method
+
+    if CONF.MODEL and CONF.XAI_METHOD:
+        CONF.EVAL_DATA_BASE_PATH = os.path.join(
+            CONF.XAIEV_BASE_DIR,
+            "XAI_evaluation",
+            CONF.MODEL,
+            CONF.XAI_METHOD,
+            CONF.DATASET_SPLIT,
+        )
+        CONF.EVAL_DATA_PATH = os.path.join(CONF.EVAL_DATA_BASE_PATH, CONF.EVAL_METHOD)
+        CONF.EVAL_RESULT_DATA_PATH = os.path.join(CONF.EVAL_DATA_PATH, "results.pcl")
 
     return CONF
 

@@ -22,7 +22,7 @@ def mask_on_image(mask: np.ndarray, img: np.ndarray, alpha: float = 0.5) -> np.n
         alpha (float, optional): The transparency of the mask overlay. Default is 0.5.
 
     Returns:
-        numpy.ndarray: The image with the XAI-CAM mask overlayed.
+        numpy.ndarray: The image with the XAI-CAM mask overlaid.
     """
     heatmap = get_rgb_heatmap(mask)
     img = img.squeeze()
@@ -70,11 +70,11 @@ def get_cutoff_area(mask,img,cutoff = 0.5):
 def get_percentage_of_image(image,mask,percentage, fill_value = 0.0):
     masked_image = np.zeros_like(image)
     n = mask.size
-    sortedvalues = np.sort(mask.flatten('K'))[::-1]
+    sorted_values = np.sort(mask.flatten('K'))[::-1]
 
     index = int(n/100*percentage)
     index_2 = n//100*percentage
-    cutoff = sortedvalues[index]
+    cutoff = sorted_values[index]
     for i in range(3):
         masked_image[:,:,i] = np.where(mask-cutoff>0.0,image[:,:,i],fill_value)
     return masked_image
@@ -85,11 +85,11 @@ def get_percentage_of_image_1d(image,mask,percentage, fill_value = 0.0):
     mask = normalize_image(mask)
     masked_image = np.zeros_like(image)
     n = mask.size
-    sortedvalues = np.sort(mask.flatten('K'))[::-1]
+    sorted_values = np.sort(mask.flatten('K'))[::-1]
 
     index = int(n/100*percentage)
     index_2 = n//100*percentage
-    cutoff = sortedvalues[index]
+    cutoff = sorted_values[index]
     for i in range(3):
         masked_image = np.where(mask-cutoff>0.0,image,fill_value)
     return masked_image
@@ -115,29 +115,40 @@ def get_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument('--num_samples', type=int, default=100, help="Number of images for PRISM explanation.")
 
     return parser
-    
+
+# TODO: rename "category" to "class_" etc.
 def generate_adversarial_examples(
     adv_folder,
     pct_range,
     categories,
-    imagedict,
+    image_dict,
     img_path,
     background_dir,
     xai_dir,
-    mask_condition
+    mask_condition,
+    limit: int,
 ):
     """
     Generate adversarial examples based on the given mask condition.
 
     """
+
+    if limit is not None:
+        assert isinstance(limit, int) and limit > 0
+    else:
+        # Note: `None` is a valid upper bound (-> no restriction)
+        pass
+
     for pct in pct_range:
         print(f"Processing percentage: {pct}%")
+        # note: we do not apply the limit here because the trained model requires all classes to be present
         for category in categories:
-            output_dir = os.path.join(adv_folder, str(pct), "test", category)
+            output_dir = os.path.join(adv_folder, str(pct), category)
             os.makedirs(output_dir, exist_ok=True)
 
-            images = imagedict[category]
-            for imagename in images:
+            images = image_dict[category]
+
+            for imagename in images[:limit]:
                 # Load original image and background
                 current_img = normalize_image(np.array(Image.open(os.path.join(img_path, category, imagename))))
                 current_background = normalize_image(np.array(Image.open(os.path.join(background_dir, category, imagename))))
@@ -160,14 +171,14 @@ def create_image_dict(BASE_DIR, DATASET, DATASET_SPLIT):
     # Define our Categories
     CATEGORIES = sorted(os.listdir(IMAGES_PATH))
 
-    imagedict = {}
+    image_dict = {}
     for cat in CATEGORIES:
-        imagedict[cat] = []
+        image_dict[cat] = []
         imagelist = os.listdir(os.path.join(IMAGES_PATH, cat))
         for im in imagelist:
-            imagedict[cat].append(im)
+            image_dict[cat].append(im)
 
-    return CATEGORIES, imagedict
+    return CATEGORIES, image_dict
 
 
 def read_conf_from_dotenv() -> SimpleNamespace:
@@ -202,12 +213,12 @@ def prepare_categories_and_images(image_path: str) -> tuple[list[str], dict[str,
     Returns:
         categories (list): List of category names (subdirectories in the image path).
         label_idx_dict (dict): A dictionary mapping category names to indices.
-        imagedict (dict): A dictionary mapping categories to lists of image filenames.
+        image_dict (dict): A dictionary mapping categories to lists of image filenames.
     """
     categories = sorted(os.listdir(image_path))
     label_idx_dict = {cat: idx for idx, cat in enumerate(categories)}
-    imagedict = {cat: os.listdir(os.path.join(image_path, cat)) for cat in categories}
-    return categories, label_idx_dict, imagedict
+    image_dict = {cat: os.listdir(os.path.join(image_path, cat)) for cat in categories}
+    return categories, label_idx_dict, image_dict
 
 def create_output_directories(output_path: str, categories: list[str]) -> None:
     """

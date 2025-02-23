@@ -20,19 +20,18 @@ def main():
 
     parser.add_argument(
         "--model",
-        "--model-full-name",
-        "--model_full_name",  # note: --model_full_name etc is accepted for legacy reasons only
-        "-n",  # obsolete (legacy)
         type=str,
         help="Full model name (e.g., simple_cnn_1_1)",
     )
 
     parser.add_argument(
-        '--version', action="store_true", help="print current version and exit"
+        "--xai-method",
+        type=str,
+        help="specify the XAI method (e.g. gradcam, xrai, prism, lime)",
     )
 
     parser.add_argument(
-        '--dataset_name', type=str, default="atsds_large", help="Name of the dataset."
+        '--version', action="store_true", help="print current version and exit"
     )
 
     parser.add_argument(
@@ -56,19 +55,18 @@ def main():
     )
 
     parser.add_argument(
-        "--create-xai-saliency-maps",
-        "-csm",
-        metavar="XAI_METHOD",
-        type=str,
-        help="choose an XAI method to create the saliency maps",
+        "--eval-method", choices=["revelation", "occlusion"], default="revelation"
     )
+
+    parser.add_argument(
+        "--limit",
+        type=int,
+        help="limits the number of processed images (per class) to achieve faster testing",
+    )
+
 
     parser.add_argument(
         "--debug", action="store_true", help="start interactive debug mode; then exit"
-    )
-
-    parser.add_argument(
-        "--xai_method", type=str, help="Select XAI method"
     )
 
     args = parser.parse_args()
@@ -115,6 +113,8 @@ def main():
 
     elif args.command == "create-eval-images":
         utils.ensure_xai_method_and_model(args)
+        core.create_eval_images(CONF)
 
     elif args.command == "eval":
         utils.ensure_xai_method_and_model(args)
+        core.do_evaluation(CONF)
