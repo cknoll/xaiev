@@ -52,7 +52,7 @@ def compute_ig_masks(model: torch.nn.Module, device: torch.device, categories: l
     for category in categories:
         images = imagedict[category]
         for image_name in images:
-            with Image.open(os.path.join(images_path, category, image_name)) as img:
+            with Image.open(pjoin(images_path, category, image_name)) as img:
                 # Preprocess the image to get the input tensor
                 current_image_tensor = TRANSFORM_TEST(img).unsqueeze(0).to(device)
 
@@ -74,14 +74,14 @@ def compute_ig_masks(model: torch.nn.Module, device: torch.device, categories: l
                 mask_on_image_result = mask_on_image_ig(ig_mask, overlay_image, alpha=0.3)
 
                 # Create output directories if they do not exist
-                mask_output_dir = os.path.join(output_path, category, 'mask')
-                overlay_output_dir = os.path.join(output_path, category, 'mask_on_image')
+                mask_output_dir = pjoin(output_path, category, 'mask')
+                overlay_output_dir = pjoin(output_path, category, 'mask_on_image')
                 os.makedirs(mask_output_dir, exist_ok=True)
                 os.makedirs(overlay_output_dir, exist_ok=True)
 
                 # Save IG mask and overlay image
-                mask_output_path = os.path.join(mask_output_dir, image_name.replace('.PNG', '.npy'))
-                overlay_output_path = os.path.join(overlay_output_dir, image_name)
+                mask_output_path = pjoin(mask_output_dir, image_name.replace('.PNG', '.npy'))
+                overlay_output_path = pjoin(overlay_output_dir, image_name)
                 np.save(mask_output_path, ig_mask)
                 Image.fromarray((mask_on_image_result * 255).astype(np.uint8)).save(overlay_output_path, "PNG")
 
@@ -121,7 +121,7 @@ def main(model_full_name, conf: utils.CONF):
     random_seed = conf.RANDOM_SEED
 
     IMAGES_PATH = pjoin(BASE_DIR, dataset_type, dataset_split)
-    output_path = pjoin(BASE_DIR, "XAI_results", model_name, "gradcam", dataset_split)
+    output_path = pjoin(BASE_DIR, "XAI_results", model_name, "ig", dataset_split)
 
     # Setup environment
     device = setup_environment(random_seed)
@@ -137,7 +137,7 @@ def main(model_full_name, conf: utils.CONF):
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
     # Load checkpoint
-    epoch,trainstats = load_model(model, optimizer, scheduler, os.path.join(CHECKPOINT_PATH, model_cpt), device)
+    epoch,trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
     print(f"Model checkpoint loaded. Epoch: {epoch}")
 
     # Prepare categories and images
@@ -149,6 +149,3 @@ def main(model_full_name, conf: utils.CONF):
     # Generate Integrated Gradients visualizations
     compute_ig_masks(model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH)
 
-
-# if __name__ == "__main__":
-#     main()

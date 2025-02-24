@@ -140,7 +140,7 @@ def main(model_full_name, conf: utils.CONF):
     random_seed = conf.RANDOM_SEED
 
     IMAGES_PATH = pjoin(BASE_DIR, dataset_type, dataset_split)
-    output_path = pjoin(BASE_DIR, "XAI_results", model_name, "prism", dataset_split)
+    output_path = pjoin(BASE_DIR, "XAI_results", model_name, "xrai", dataset_split)
 
     # Setup environment
     device = setup_environment(random_seed)
