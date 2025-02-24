@@ -14,7 +14,8 @@ def bootstrap():
         print(utils.yellow(msg))
         exit(1)
 
-    cwd = os.path.abspath(os.getcwd())
+    cwd = os.path.abspath(os.getcwd()).replace("\\", "/")
+
     print(f"Create .env file in current working directory: {cwd}.")
     content = (
         "# Note: This directory might contain several GB of (auto-generated) data\n"
