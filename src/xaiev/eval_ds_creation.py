@@ -23,13 +23,14 @@ def create_eval_dataset(
     conf: utils.CONF, eval_method: str, mask_condition, pct_range
 ):
 
+    model_name = "_".join(conf.MODEL.split("_")[:-2])
     # Paths for dataset and associated outputs
     BACKGROUND_DIR = get_dir_path(conf.DATASET_BACKGROUND_DIR, conf.DATASET_SPLIT)
 
     # TODO: improve naming (including/excluding train/test-split)
     DATASET_DIR = get_dir_path(conf.DATA_SET_PATH, conf.DATASET_SPLIT)
     XAI_DIR = get_dir_path(
-        conf.XAIEV_BASE_DIR, "XAI_results", conf.MODEL, conf.XAI_METHOD, conf.DATASET_SPLIT
+        conf.XAIEV_BASE_DIR, "XAI_results", model_name, conf.XAI_METHOD, conf.DATASET_SPLIT
     )
     ADV_FOLDER = os.path.join(conf.EVAL_DATA_BASE_PATH, eval_method)
 

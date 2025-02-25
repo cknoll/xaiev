@@ -45,7 +45,7 @@ def get_input_tensors(image):
     return transform_test(image).unsqueeze(0)
 
 def generate_gradcam_visualizations(model: torch.nn.Module, device: torch.device, categories: list[str],
-                                     image_dict: dict[str, list[str]], label_idx_dict: dict[str, int],
+                                     imagedict: dict[str, list[str]], label_idx_dict: dict[str, int],
                                      output_path: str, images_path: str, target_layer: torch.nn.Module) -> None:
     """
     Generate Grad-CAM visualizations for each image in the dataset and save them.
@@ -54,7 +54,7 @@ def generate_gradcam_visualizations(model: torch.nn.Module, device: torch.device
         model (torch.nn.Module): The model to be used for generating Grad-CAM visualizations.
         device (torch.device): The device to run the model on (GPU or CPU).
         categories (list): List of categories in the dataset.
-        image_dict (dict): A dictionary of image filenames for each category.
+        imagedict (dict): A dictionary of image filenames for each category.
         label_idx_dict (dict): A dictionary mapping category names to indices.
         output_path (str): Path where Grad-CAM results will be saved.
         images_path (str): Path to the dataset images.
@@ -62,7 +62,7 @@ def generate_gradcam_visualizations(model: torch.nn.Module, device: torch.device
     """
     for category in categories:
         model.eval()
-        images = image_dict[category]
+        images = imagedict[category]
         for image_name in images:
             with Image.open(pjoin(images_path, category, image_name)) as img:
                 image_tensor = transform_test(img).unsqueeze(0).to(device)
@@ -72,23 +72,20 @@ def generate_gradcam_visualizations(model: torch.nn.Module, device: torch.device
                 save_xai_outputs(mask, np.array(img), category, image_name, output_path)
 
 def main(model_full_name, conf: utils.CONF):
-
+    
     BASE_DIR = conf.XAIEV_BASE_DIR
     CHECKPOINT_PATH = conf.MODEL_CP_PATH
 
-    # Changeable Parameters
+    # Changable Parameters
     model_name = "_".join(model_full_name.split("_")[:-2])
     model_cpt = model_full_name + ".tar"
-
+   
     dataset_type = conf.DATASET_NAME
     dataset_split = conf.DATASET_SPLIT
     random_seed = conf.RANDOM_SEED
 
     IMAGES_PATH = pjoin(BASE_DIR, dataset_type, dataset_split)
-
-    # DISCUSS: we use `model_full_name` now for the output path
-    # output_path = pjoin(BASE_DIR, "XAI_results", model_name, "gradcam", dataset_split)
-    output_path = pjoin(BASE_DIR, "XAI_results", model_full_name, "gradcam", dataset_split)
+    output_path = pjoin(BASE_DIR, "XAI_results", model_name, "gradcam", dataset_split)
 
     # Setup environment
     device = setup_environment(random_seed)
@@ -106,7 +103,7 @@ def main(model_full_name, conf: utils.CONF):
 
     epoch,trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
     print(f"Model checkpoint loaded. Epoch: {epoch}")
-
+    
     ##############
 
     # print(model) # confirm gradcam layer if necessary
@@ -122,16 +119,13 @@ def main(model_full_name, conf: utils.CONF):
     print(GRADCAM_TARGET_LAYER)
 
     # Prepare categories and images
-    categories, label_idx_dict, image_dict = prepare_categories_and_images(IMAGES_PATH)
+    categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
 
     # Ensure output directories exist
     create_output_directories(output_path, categories)
 
     # Run Grad-CAM visualization
     generate_gradcam_visualizations(
-        model, device, categories, image_dict, label_idx_dict,
+        model, device, categories, imagedict, label_idx_dict, 
         output_path, IMAGES_PATH, GRADCAM_TARGET_LAYER
     )
-
-# if __name__ == "__main__":
-#     main()
