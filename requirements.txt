@@ -7,8 +7,12 @@ opencv-python
 ipydex
 python-dotenv
 matplotlib
+numpy
+Pillow
 
-# for prims xai algorithm
+# for xai algorithm
 torchprism
 scikit-image
 icecream
+lime
+saliency
