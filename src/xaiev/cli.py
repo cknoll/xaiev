@@ -13,7 +13,7 @@ def main():
 
     parser.add_argument(
         "command",
-        choices=["train", "inference", "create-saliency-maps", "create-eval-images", "eval"],
+        choices=["train", "inference", "create-saliency-maps", "create-eval-images", "eval", "visualize"],
         help="main xaiev command",
         nargs="?",
     )
@@ -118,3 +118,6 @@ def main():
     elif args.command == "eval":
         utils.ensure_xai_method_and_model(args)
         core.do_evaluation(CONF)
+
+    elif args.command == "visualize":
+        core.do_visualization(CONF)
