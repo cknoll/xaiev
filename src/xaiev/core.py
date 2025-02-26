@@ -70,3 +70,7 @@ def do_evaluation(conf: utils.CONF):
         evaluation.visualize_evaluation(conf)
     else:
         raise ValueError(f"unexpected evaluation method: {conf.EVAL_METHOD}")
+
+def do_visualization(CONF):
+    from . import visualization
+    visualization.main(CONF)

@@ -140,7 +140,7 @@ def generate_adversarial_examples(
         pass
 
     for pct in pct_range:
-        print(f"Processing percentage: {pct}%")
+        print(f"Processing percentage: {pct / 10}%")
         # note: we do not apply the limit here because the trained model requires all classes to be present
         for category in categories:
             output_dir = os.path.join(adv_folder, str(pct), category)
