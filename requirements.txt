@@ -9,6 +9,7 @@ python-dotenv
 matplotlib
 numpy
 Pillow
+tabulate
 
 # for xai algorithm
 torchprism
