@@ -56,7 +56,7 @@ def do_prism_pipeline(*args, **kwargs):
 
 def create_eval_images(conf: utils.CONF):
     from . import eval_ds_creation
-    eval_ds_creation.create_revelation_dataset(conf)
+    # eval_ds_creation.create_revelation_dataset(conf)
     eval_ds_creation.create_occlusion_dataset(conf)
 
 
