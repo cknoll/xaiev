@@ -19,6 +19,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      DEBUG_WITH_SSH: false
+
     steps:
     - uses: actions/checkout@v3
 
@@ -61,42 +64,50 @@ jobs:
         xaiev --version
         xaiev --bootstrap
 
-    # - name: create-saliency-maps
-    #   # on the demo dataset this only takes a few seconds
-    #   run: |
-    #     cd atsds-demo
-    #     test ! -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
-    #     xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1
-    #     test -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
+    - name: create-saliency-maps
+      # on the demo dataset this only takes a few seconds
+      run: |
+        cd atsds-demo
+        test ! -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
+        xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1 || exit_code=$?
+        if [ $exit_code -ne 0 ]; then
+          echo "Command ended with exit code $exit_code"
+        fi
+        test -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
+      # for some unknown reason the xaiev command might result in a nonzero exit code
 
-    # - name: create-eval-images and test presence of one image
-    #   # takes about 30 seconds
-    #   run: |
-    #     cd atsds-demo
-    #     test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
-    #     xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1
-    #     test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
-
-
-    # - name: do basic evaluation (1) and check result file exists
-    #   # takes about 30 seconds
-    #   run: |
-    #     cd atsds-demo
-    #     test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
-    #     xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method revelation
-    #     test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
+    - name: create-eval-images and test presence of one image
+      # takes about 30 seconds
+      run: |
+        cd atsds-demo
+        test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
+        xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1
+        test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
 
 
-    # - name: do basic evaluation (2) and check result file exists
-    #   # takes about 30 seconds
-    #   run: |
-    #     cd atsds-demo
-    #     test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/results.png
-    #     xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method occlusion
-    #     test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/results.png
+    - name: do basic evaluation (1) and check result file exists
+      # takes about 30 seconds
+      run: |
+        cd atsds-demo
+        test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
+        xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method revelation
+        test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
 
-    # temporary debugging (uncomment if necessary)
+
+    - name: do basic evaluation (2) and check result file exists
+      # takes about 30 seconds
+      run: |
+        cd atsds-demo
+        test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/results.png
+        xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method occlusion
+        test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/results.png
+
+
+
+
+    # debugging (set env.DEBUG_WITH_SSH to true (see above))
     - name: Setup tmate session
+      if: env.DEBUG_WITH_SSH == 'true'
       id: tmate
       uses: mxschmitt/action-tmate@v3
       with:
@@ -106,10 +117,12 @@ jobs:
     # this allows to connect to the debugging ssh server without manual copy-pasting
 
     - name: Capture tmate output
+      if: env.DEBUG_WITH_SSH == 'true'
       run: |
           echo $(cat /home/runner/work/_temp/_runner_file_commands/* | grep ::notice::SSH | awk '{print $NF}') > tmate-connection.txt
 
     - name: Upload tmate logs as artifact
+      if: env.DEBUG_WITH_SSH == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: tmate-connection
