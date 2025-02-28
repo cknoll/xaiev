@@ -28,11 +28,12 @@ from . import utils
 
 # TODO: unify common parts of both functions
 def eval_revelation(conf: utils.CONF):
-    _evaluation(conf, range(0, 101, 10))
+    # _evaluation(conf, range(0, 101, 10))
+    pass
 
 
 def eval_occlusion(conf: utils.CONF):
-    _evaluation(conf, range(10, 101, 10))
+    _evaluation(conf, range(0, 101, 10))
 
 
 def _evaluation(conf: utils.CONF, percentage_range: list[int]):
@@ -95,6 +96,10 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
 
         # Iterate over percentages
         for pct in percentage_range:
+
+            # temporarily generate only for 0
+            if pct > 0:
+                break
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
             testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)

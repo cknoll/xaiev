@@ -71,7 +71,7 @@ def create_config(args) -> CONF:
             CONF.DATASET_SPLIT,
         )
         CONF.EVAL_DATA_PATH = os.path.join(CONF.EVAL_DATA_BASE_PATH, CONF.EVAL_METHOD)
-        CONF.EVAL_RESULT_DATA_PATH = os.path.join(CONF.EVAL_DATA_PATH, "results.pcl")
+        CONF.EVAL_RESULT_DATA_PATH = os.path.join(CONF.EVAL_DATA_PATH, "results_00.pcl")
 
     return CONF
 
