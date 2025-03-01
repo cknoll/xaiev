@@ -50,7 +50,7 @@ def main():
 
     parser.add_argument("--inference-mode", "-im", choices=["copy", "json"], default="copy")
 
-    parser.add_argument("--eval-method", choices=["revelation", "occlusion"], default="revelation")
+    parser.add_argument("--eval-method", choices=["revelation", "occlusion"], default="both")
 
     parser.add_argument(
         "--limit",

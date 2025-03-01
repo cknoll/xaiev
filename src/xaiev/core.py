@@ -74,11 +74,10 @@ def create_eval_images(conf: utils.CONF):
 
 def do_evaluation(conf: utils.CONF):
     from . import evaluation
-
-    if conf.EVAL_METHOD == "revelation":
+    if conf.EVAL_METHOD in ["revelation", "both"] :
         evaluation.eval_revelation(conf)
         evaluation.visualize_evaluation(conf)
-    elif conf.EVAL_METHOD == "occlusion":
+    if conf.EVAL_METHOD in ["occlusion", "both"]:
         evaluation.eval_occlusion(conf)
         evaluation.visualize_evaluation(conf)
     else:
