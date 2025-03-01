@@ -121,7 +121,7 @@ def get_xai_method_display_name(xai_method):
     """
     # TODO: fetch those names from the model
     if xai_method.lower().startswith("gradcam"):
-        res = "GradCAM"
+        res = "Grad-CAM"
     elif xai_method.lower().startswith("lime"):
         res = "LIME"
     elif xai_method.lower().startswith("xrai"):

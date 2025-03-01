@@ -39,7 +39,7 @@ class EvaluationManager:
         self.ASQ_values: list[list] = []
 
         # allow no-plot-mode for faster ASQ-calculation
-        self.plot = False
+        self.plot = True
 
     def create_plots(self):
 
@@ -93,7 +93,6 @@ class EvaluationManager:
 
                 # add value to table
                 self.ASQ_values[-1].append(ASQ)
-
 
         headers = [""] + [utils.get_xai_method_display_name(n) for n in self.xai_methods]
         print(tabulate.tabulate(self.ASQ_values, tablefmt="latex", headers=headers))
@@ -150,9 +149,20 @@ class EvaluationManager:
         # calculate accuracy in percent
         accuracy_pct = np.mean((np.divide(correct, 50)), axis=1) * 100
 
-        # TODO: fix this if the occlusion curves are fixed
+        # TODO: remove this when the complete workflow includes 0% for occlusion
+
+        # the following values come from a tailored run (only 0% occlusion for prims)
+        # motivation save time but get the correct values for the paper
+
+        zero_values = {
+            "simple_cnn": 98.94736842,
+            "vgg16": 99.26315789,
+            "resnet50": 98.63157895,
+            "convnext_tiny": 97.68421053,
+        }
+
         if np.diff(accuracy_pct[[0, -1]]) < 0:
-            accuracy_pct = np.concatenate(([97], accuracy_pct))
+            accuracy_pct = np.concatenate(([zero_values[model_name]], accuracy_pct))
 
         percentage_range = list(range(len(accuracy_pct)))
 
