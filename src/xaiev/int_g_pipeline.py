@@ -2,13 +2,14 @@
 import argparse
 import os
 import random
+import pickle
 
 ### 3rd party libraries
 import numpy as np
 import cv2
 from PIL import Image
-# from captum.attr import IntegratedGradients
-# from captum.attr import visualization as viz
+from captum.attr import IntegratedGradients
+from captum.attr import visualization as viz
 
 ## PyTorch
 import torch
@@ -26,64 +27,52 @@ from . import utils
 
 pjoin = os.path.join
 
-TRANSFORM_TEST = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop((224, 224)),
+TRANSFORM_TEST = transforms.Compose(
+    [transforms.Resize((224,224)),
     transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
+    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 
-def compute_ig_masks(model: torch.nn.Module, device: torch.device, categories: list[str], 
-                       imagedict: dict[str, list[str]], label_idx_dict: dict[str, int], 
-                       output_path: str, images_path: str, runs: int = 64) -> None:
-    """
-    Generate Integrated Gradients (IG) visualizations for each image in the dataset and save them.
+def compute_ig_masks(model, device, categories, imagedict, label_idx_dict, output_path, images_path):
+    """Generate Integrated Gradients visualizations for each image in the dataset."""
+    # Initialize Integrated Gradients
+    ig = IntegratedGradients(model)
 
-    Args:
-        model (torch.nn.Module): The model used for generating IG visualizations.
-        device (torch.device): The device to run the model on (GPU or CPU).
-        categories (list): List of categories in the dataset.
-        imagedict (dict): A dictionary of image filenames for each category.
-        label_idx_dict (dict): A dictionary mapping category names to indices.
-        output_path (str): Path where IG results will be saved.
-        images_path (str): Path to the dataset images.
-        runs (int, optional): Number of IG runs for smoothing. Defaults to 64.
-    """
     for category in categories:
         images = imagedict[category]
         for image_name in images:
-            with Image.open(pjoin(images_path, category, image_name)) as img:
-                # Preprocess the image to get the input tensor
-                current_image_tensor = TRANSFORM_TEST(img).unsqueeze(0).to(device)
+            image_path = os.path.join(images_path, category, image_name)
+            with open(image_path, 'rb') as f:
+                with Image.open(f) as current_image:
+                    current_image_tensor = TRANSFORM_TEST(current_image).unsqueeze(0).to(device)
+                    current_image_tensor.requires_grad = True
 
-                # Perform Integrated Gradients computation using int_g.get_ig_attributions
-                ig_attributions = get_ig_attributions(
-                    model=model,
-                    image_tensor=current_image_tensor,
-                    label_idx=label_idx_dict[category],
-                    runs=runs
-                )
-                # ig_attributions = ig_attributions.squeeze().detach().cpu().numpy()
+                    # Set baseline as a tensor of zeros
+                    baseline = torch.zeros_like(current_image_tensor)
 
-                # Convert to visualization format
-                ig_mask = np.sum(ig_attributions, axis=0)  # Aggregate across channels
-                ig_mask = normalize_image(ig_mask)
+                    # Perform Integrated Gradients computation
+                    attr_ig = ig.attribute(current_image_tensor, baselines=baseline, target=label_idx_dict[category])
+                    attr_ig = attr_ig.squeeze().detach().cpu().numpy()
 
-                # Overlay IG mask on original image
-                overlay_image = np.array(img).astype(np.float32) / 255.0
-                mask_on_image_result = mask_on_image_ig(ig_mask, overlay_image, alpha=0.3)
+                    # Convert to visualization format
+                    ig_mask = np.sum(attr_ig, axis=0)  # Aggregate across channels
+                    ig_mask = normalize_image(ig_mask)
 
-                # Create output directories if they do not exist
-                mask_output_dir = pjoin(output_path, category, 'mask')
-                overlay_output_dir = pjoin(output_path, category, 'mask_on_image')
-                os.makedirs(mask_output_dir, exist_ok=True)
-                os.makedirs(overlay_output_dir, exist_ok=True)
+                    # Overlay IG mask on original image
+                    overlay_image = np.array(current_image).astype(np.float32) / 255.0
+                    mask_on_image_result = mask_on_image_ig(ig_mask, overlay_image, alpha=0.3)
 
-                # Save IG mask and overlay image
-                mask_output_path = pjoin(mask_output_dir, image_name.replace('.PNG', '.npy'))
-                overlay_output_path = pjoin(overlay_output_dir, image_name)
-                np.save(mask_output_path, ig_mask)
-                Image.fromarray((mask_on_image_result * 255).astype(np.uint8)).save(overlay_output_path, "PNG")
+                    # Create output directories if they do not exist
+                    mask_output_dir = os.path.join(output_path, category, 'mask')
+                    overlay_output_dir = os.path.join(output_path, category, 'mask_on_image')
+                    os.makedirs(mask_output_dir, exist_ok=True)
+                    os.makedirs(overlay_output_dir, exist_ok=True)
+
+                    # Save IG mask and overlay image
+                    mask_output_path = os.path.join(mask_output_dir, image_name.replace('.jpg', '.npy'))
+                    overlay_output_path = os.path.join(overlay_output_dir, image_name)
+                    np.save(mask_output_path, ig_mask)
+                    Image.fromarray((mask_on_image_result * 255).astype(np.uint8)).save(overlay_output_path, "PNG")
+
 
 
 def mask_on_image_ig(mask, img, alpha=0.5):
@@ -133,8 +122,8 @@ def main(model_full_name, conf: utils.CONF):
     model = get_model(model_name, n_classes = testset.get_num_classes())
     model = model.to(device)
     model.eval()
-    optimizer = optim.Adam(model.parameters())
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    optimizer = optim.SGD(model.parameters(),lr=0.1, momentum = 0.9,weight_decay=2e-04)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,5000)
 
     # Load checkpoint
     epoch,trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
