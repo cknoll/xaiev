@@ -32,7 +32,7 @@ def eval_revelation(conf: utils.CONF):
 
 
 def eval_occlusion(conf: utils.CONF):
-    _evaluation(conf, range(10, 101, 10))
+    _evaluation(conf, range(0, 101, 10))
 
 
 def _evaluation(conf: utils.CONF, percentage_range: list[int]):
