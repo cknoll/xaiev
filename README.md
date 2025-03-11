@@ -10,7 +10,7 @@
 
 - clone the repo
 - `pip install -e .`
-- ask the authors for the dataset
+- download the "atsds_large" dataset from [here](https://datashare.tu-dresden.de/s/4mNxbpx343Pq835)
 
 
 ## Usage
@@ -33,7 +33,7 @@ Example (see also .env-example):
 XAIEV_BASE_DIR="/home/username/xaiev/data/atsds_large"
 ```
 
-This file is evaluated by `utils.read_paths_from_dotenv()`. Note: The package `opencv-python` has to be installed (see `requirements.txt`)
+This file is evaluated by `utils.read_paths_from_dotenv()`.
 
 
 The expected path structure is as follows (as shown in the dataset "atsds_large"):
@@ -69,7 +69,7 @@ The expected path structure is as follows (as shown in the dataset "atsds_large"
 │       └── ...
 │
 ├── XAI_results
-│   ├── simple_cnn/             cnn model directory
+│   ├── simple_cnn/             directory specifying cnn model
 │   │   ├── gradcam/            xai method
 │   │   │   ├── test/           split fraction (train/test)
 │   │   │   │   ├── mask/
@@ -85,10 +85,10 @@ The expected path structure is as follows (as shown in the dataset "atsds_large"
 │
 ├── XAI_evaluation
 │   ├── simple_cnn/gradcam/test/    same structure as `XAI_results`
-│   │   ├── revelation
-│   │   │   └── results.pcl
-│   │   └── occlusion
-│   │       └── results.pcl
+│   │           ├── revelation
+│   │           │   └── results.pcl
+│   │           └── occlusion
+│   │               └── results.pcl
 │   └── ...                     other XAI methods and models
 └── ...
 ```
@@ -107,7 +107,7 @@ The four steps of the pipeline (with example calls):
 - (4) statistically evaluating accuracy changes on these test images and comparison to the ground truth.
     - `xaiev eval --xai-method gradcam --model simple_cnn_1_1`
 
-#### Arguments for create-saliency-maps
+#### Arguments for `xaiev create-saliency-maps`
 - (1) **`--xai-method`** (required):
   Selects the explainable AI (XAI) method to be used in the analysis.
   **Example:**
@@ -135,7 +135,16 @@ The four steps of the pipeline (with example calls):
 - Use a trained model to perform classification
     - `xaiev inference --model simple_cnn_1_1`
 
-## Contributing
+## Contributing and Development Notes
+
+This software is provided in the hope that it will be useful. If you spot opportunities for improvement feel free to open an issue or even better a pull-request.
+
+
+### Unittests and Continuous Integration (CI)
+
+- Unittests can be run by `pytest`.
+- The CI runs the important steps of the pipeline based on the drastically reduced dataset [atsds-demo](https://github.com/cknoll/atsds-demo). See [.github/workflows/python-app.yml](.github/workflows/python-app.yml) for details.
+
 
 ### Code Style
 
