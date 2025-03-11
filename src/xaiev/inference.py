@@ -19,6 +19,7 @@ from . import utils
 # shortcut
 pjoin = os.path.join
 
+
 class InferenceManager:
     """
     Class to bundle inference functionality.
@@ -128,14 +129,14 @@ class InferenceManager:
         else:
             return class_names[predicted.item()]
 
-    def set_class_names(self, part: str  = "test"):
+    def set_class_names(self, part: str = "test"):
         """
         :param part:    either "test" or "train"
         """
         class_dirs = glob.glob(pjoin(self.dataset_base_path, part, "*"))
         self.class_names = [os.path.split(abspath)[1] for abspath in class_dirs]
 
-    def get_image_paths_of_dataset_part(self, part: str  = "test"):
+    def get_image_paths_of_dataset_part(self, part: str = "test"):
 
         class_dirs = glob.glob(pjoin(self.dataset_base_path, part, "*"))
         assert len(class_dirs) == len(self.class_names)
@@ -198,7 +199,7 @@ class InferenceManager:
             # example: image_path = "/home/username/xaiev/data/atsds_large/imgs_main/test/00002/000096.png'"
             short_path = os.path.join(*image_path.split(os.path.sep)[-3:])
             class_dir = image_path.split(os.path.sep)[-2]
-            boolean_result = (class_dir == res["class"])
+            boolean_result = class_dir == res["class"]
             res["boolean_result"] = boolean_result
             result_dict[short_path] = res
 

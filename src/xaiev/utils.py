@@ -7,6 +7,7 @@ from colorama import Style, Fore
 
 from dataclasses import dataclass
 
+
 @dataclass
 class CONF:
     XAIEV_BASE_DIR: str
@@ -27,6 +28,7 @@ class CONF:
     EVAL_DATA_PATH: str
     EVAL_RESULT_DATA_PATH: str
     EVAL_METHOD: str
+
 
 def read_conf_from_dotenv() -> CONF:
     if not os.path.isfile(".env"):
@@ -114,6 +116,7 @@ def get_model_display_name(model_name):
         res = model_name
     return res
 
+
 def get_xai_method_display_name(xai_method):
     """
     Maps the technical method name (e.g. "gradcam") to a string suitable for public display
@@ -136,6 +139,7 @@ def get_xai_method_display_name(xai_method):
 ################################################################################
 # functions to create colored console outputs
 ################################################################################
+
 
 def bright(txt):
     return f"{Style.BRIGHT}{txt}{Style.RESET_ALL}"

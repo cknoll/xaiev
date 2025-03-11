@@ -1,10 +1,12 @@
 import argparse
 
 from ipydex import IPS, activate_ips_on_exception
+
 activate_ips_on_exception()
 
 from . import core
 from . import utils
+
 
 def main():
 
@@ -30,17 +32,13 @@ def main():
         help="specify the XAI method (e.g. gradcam, xrai, prism, lime)",
     )
 
-    parser.add_argument(
-        '--version', action="store_true", help="print current version and exit"
-    )
+    parser.add_argument("--version", action="store_true", help="print current version and exit")
 
     parser.add_argument(
-        '--dataset_split', type=str, default="test", help="Dataset split (e.g., 'train', 'test')."
+        "--dataset_split", type=str, default="test", help="Dataset split (e.g., 'train', 'test')."
     )
 
-    parser.add_argument(
-        '--random_seed', type=int, default=1414, help="Random seed for reproducibility."
-    )
+    parser.add_argument("--random_seed", type=int, default=1414, help="Random seed for reproducibility.")
 
     parser.add_argument(
         "--bootstrap", action="store_true", help="create .env configuration file in current workdir"
@@ -50,13 +48,9 @@ def main():
         "--inference", action="store_true", help="apply selected model to dataset to perform classification"
     )
 
-    parser.add_argument(
-        "--inference-mode", "-im", choices=["copy", "json"], default="copy"
-    )
+    parser.add_argument("--inference-mode", "-im", choices=["copy", "json"], default="copy")
 
-    parser.add_argument(
-        "--eval-method", choices=["revelation", "occlusion"], default="revelation"
-    )
+    parser.add_argument("--eval-method", choices=["revelation", "occlusion"], default="revelation")
 
     parser.add_argument(
         "--limit",
@@ -64,10 +58,7 @@ def main():
         help="limits the number of processed images (per class) to achieve faster testing",
     )
 
-
-    parser.add_argument(
-        "--debug", action="store_true", help="start interactive debug mode; then exit"
-    )
+    parser.add_argument("--debug", action="store_true", help="start interactive debug mode; then exit")
 
     args = parser.parse_args()
 
@@ -77,6 +68,7 @@ def main():
 
     if args.version:
         from .release import __version__
+
         print(__version__)
         exit()
 

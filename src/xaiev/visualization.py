@@ -12,10 +12,12 @@ from . import utils
 
 pjoin = os.path.join
 
+
 def main(conf: utils.CONF):
     em = EvaluationManager(conf)
     em.create_plots()
     em.calc_asq_values()
+
 
 class EvaluationManager:
 
@@ -79,7 +81,9 @@ class EvaluationManager:
 
                     _, accuracies = self.curves[key]
 
-                    area_under_curve = np.trapezoid(accuracies, percentage_range) - (acc_min * (pct_max - pct_min))
+                    area_under_curve = np.trapezoid(accuracies, percentage_range) - (
+                        acc_min * (pct_max - pct_min)
+                    )
                     area_above_curve = A_total - area_under_curve
 
                     if eval_method == "occlusion":
@@ -99,11 +103,11 @@ class EvaluationManager:
 
     def create_plot_for_model_and_eval_method(self, model_name, eval_method):
 
-        plt.rcParams['text.usetex'] = True
-        plt.rcParams['font.family'] = "serif"
-        mm = 1/25.4 # mm to inch
+        plt.rcParams["text.usetex"] = True
+        plt.rcParams["font.family"] = "serif"
+        mm = 1 / 25.4  # mm to inch
         scale = 1.75
-        fs = [75*mm*scale, 35*mm*scale]
+        fs = [75 * mm * scale, 35 * mm * scale]
         fig = plt.figure(figsize=fs, dpi=100)
 
         for fpath in self.files:
@@ -126,7 +130,7 @@ class EvaluationManager:
             plt.ylim(1, 105)
             plt.xlabel(r"$T$ [\%]")
             plt.ylabel(r"Accuracy [\%]")
-            plt.legend(bbox_to_anchor=(.85, 0.8), loc="upper left")
+            plt.legend(bbox_to_anchor=(0.85, 0.8), loc="upper left")
             plt.subplots_adjust(bottom=0.22, left=0.12, right=0.87)
             # if model_name == "simple_cnn" and eval_method == "revelation":
             #     plt.show()
@@ -136,7 +140,7 @@ class EvaluationManager:
             print(f"File written: {img_fpath}")
 
     def eval_pcl_file(self, fpath, model_name, xai_method, eval_method, label=None, plt_args=None):
-        with open(fpath, 'rb') as f:
+        with open(fpath, "rb") as f:
             performance_xai_type = pickle.load(f)
 
         if label is None:

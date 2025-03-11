@@ -8,6 +8,7 @@ from torchvision.datasets.folder import make_dataset
 from torchvision.datasets.utils import download_and_extract_archive, verify_str_arg
 from torchvision.datasets.vision import VisionDataset
 
+
 # TODO: rename this class (and file) to XAIEV_Dataset (ATSDS is only one possible dataset)
 class ATSDS(VisionDataset):
     """`Augmented Data using Traffic signs from the German Traffic Sign Recognition Benchmark (GTSRB) <https://benchmark.ini.rub.de/>`_ Dataset.
@@ -26,9 +27,8 @@ class ATSDS(VisionDataset):
     def __init__(
         self,
         root: str,
-
         # TODO: remove hardcoded reference to atsds
-        dataset_type = "atsds_large",
+        dataset_type="atsds_large",
         split: str = "train",
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
@@ -37,7 +37,7 @@ class ATSDS(VisionDataset):
         super().__init__(root, transform=transform, target_transform=target_transform)
 
         self._split = split
-        self._dataset_type = dataset_type # no verify be careful.
+        self._dataset_type = dataset_type  # no verify be careful.
 
         if dataset_type is None:
             # this should be the new default
@@ -48,9 +48,7 @@ class ATSDS(VisionDataset):
                 self._base_folder / self._split
         else:
             self._base_folder = pathlib.Path(root) / dataset_type
-            self._target_folder = (
-                self._base_folder / self._split
-            )
+            self._target_folder = self._base_folder / self._split
         print(self._target_folder)
 
         if not self._check_exists():
@@ -71,10 +69,10 @@ class ATSDS(VisionDataset):
         return len(self._samples)
 
     def get_classes(self) -> int:
-        return sorted(np.unique(np.array(self._samples)[:,1]))
+        return sorted(np.unique(np.array(self._samples)[:, 1]))
 
     def get_num_classes(self) -> int:
-        return len(np.unique(np.array(self._samples)[:,1]))
+        return len(np.unique(np.array(self._samples)[:, 1]))
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
 

@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from ipydex import IPS
 
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
-CUDA_LAUNCH_BLOCKING=1
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+CUDA_LAUNCH_BLOCKING = 1
 
 ## PyTorch
 import torch
@@ -25,6 +25,7 @@ from .ATSDS import ATSDS
 from .gradcam import get_gradcam
 from .model import get_model, load_model, test_model
 from . import utils
+
 
 # TODO: unify common parts of both functions
 def eval_revelation(conf: utils.CONF):
@@ -42,10 +43,13 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
 
     # Define transformations for the train and test dataset
     transform_test = transforms.Compose(
-        [transforms.Resize(256),
-        transforms.CenterCrop(size=(224,224)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+        [
+            transforms.Resize(256),
+            transforms.CenterCrop(size=(224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ]
+    )
 
     RANDOM_SEED = conf.RANDOM_SEED
 
@@ -70,7 +74,7 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
     model = model.to(device)
     loss_criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters())
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer,200)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
 
     # load the model weights
     epoch, trainstats = load_model(model, optimizer, scheduler, conf.MODEL_PATH, device)
@@ -97,19 +101,19 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
-            testloader = torch.utils.data.DataLoader(testset, batch_size = 1, shuffle = True, num_workers = 2)
-            c,c_5,t,loss,softmaxes,scores = test_model(model,testloader,loss_criterion, device)
+            testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
+            c, c_5, t, loss, softmaxes, scores = test_model(model, testloader, loss_criterion, device)
             c_list.append(c)
             c_5_list.append(c_5)
             softmaxes_list.append(softmaxes)
             scores_list.append(scores)
-        performance_xai_type[current_method] = (c_list,c_5_list,softmaxes_list,scores_list,losses)
+        performance_xai_type[current_method] = (c_list, c_5_list, softmaxes_list, scores_list, losses)
 
     total = t
 
     # Save the performance_xai_type dictionary to a pickle file
     dic_save_path = conf.EVAL_RESULT_DATA_PATH
-    with open(dic_save_path, 'wb') as f:
+    with open(dic_save_path, "wb") as f:
         pickle.dump(performance_xai_type, f)
 
 
@@ -117,7 +121,7 @@ def visualize_evaluation(conf: utils.CONF, xai_methods: list[str] = None):
 
     # Load the performance_xai_type dictionary from the pickle file
     dic_load_path = conf.EVAL_RESULT_DATA_PATH
-    with open(dic_load_path, 'rb') as f:
+    with open(dic_load_path, "rb") as f:
         performance_xai_type = pickle.load(f)
 
     if xai_methods is None:
@@ -125,8 +129,8 @@ def visualize_evaluation(conf: utils.CONF, xai_methods: list[str] = None):
 
     accuracies = []
     for current_method in xai_methods:
-        correct,correct_5,softmax,score,loss = performance_xai_type[current_method]
-        accuracy = np.mean((np.divide(correct,50)),axis=1)
+        correct, correct_5, softmax, score, loss = performance_xai_type[current_method]
+        accuracy = np.mean((np.divide(correct, 50)), axis=1)
         accuracies.append(accuracy)
 
     for i, entry in enumerate(accuracies):

@@ -19,9 +19,7 @@ def create_revelation_dataset(conf: utils.CONF):
     create_eval_dataset(conf, eval_method, revelation_condition, pct_range)
 
 
-def create_eval_dataset(
-    conf: utils.CONF, eval_method: str, mask_condition, pct_range
-):
+def create_eval_dataset(conf: utils.CONF, eval_method: str, mask_condition, pct_range):
 
     model_name = "_".join(conf.MODEL.split("_")[:-2])
     # Paths for dataset and associated outputs
