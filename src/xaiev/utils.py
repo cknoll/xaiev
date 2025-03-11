@@ -95,6 +95,44 @@ def ensure_xai_method_and_model(args):
     ensure_model(args)
 
 
+def get_model_display_name(model_name):
+    """
+    Maps the technical model name (e.g. "simple_cnn") to a string suitable for public display
+    (e.g. "Simple CNN")
+    """
+
+    # TODO: fetch those names from the model
+    if model_name.startswith("simple_cnn"):
+        res = "Simple CNN"
+    elif model_name.startswith("vgg16"):
+        res = "VGG16"
+    elif model_name.startswith("resnet"):
+        res = "ResNet50"
+    elif model_name.startswith("convnext"):
+        res = "ConvNeXt Tiny"
+    else:
+        res = model_name
+    return res
+
+def get_xai_method_display_name(xai_method):
+    """
+    Maps the technical method name (e.g. "gradcam") to a string suitable for public display
+    (e.g. "GradCAM")
+    """
+    # TODO: fetch those names from the model
+    if xai_method.lower().startswith("gradcam"):
+        res = "Grad-CAM"
+    elif xai_method.lower().startswith("lime"):
+        res = "LIME"
+    elif xai_method.lower().startswith("xrai"):
+        res = "XRAI"
+    elif xai_method.lower().startswith("prism"):
+        res = "PRISM"
+    else:
+        res = xai_method
+    return res
+
+
 ################################################################################
 # functions to create colored console outputs
 ################################################################################

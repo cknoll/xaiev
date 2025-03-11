@@ -4,6 +4,7 @@ import numpy as np
 
 
 def get_gradcam(model,target_layer,image_tensor,label_idx, output_shape=None):
+    print("dbg: get_gradcam")
     hook_dict = {}
     def features_hook(m,i,o):
         hook_dict["features"] = o
@@ -11,19 +12,19 @@ def get_gradcam(model,target_layer,image_tensor,label_idx, output_shape=None):
         hook_dict["grads"] = o
 
     handle_f = target_layer.register_forward_hook(features_hook)
-    handle_g = target_layer.register_backward_hook(grad_hook) 
-    
+    handle_g = target_layer.register_backward_hook(grad_hook)
+
     out = model.eval()(image_tensor)
     out[:,label_idx].backward(retain_graph=True)
-    
+
     features = hook_dict["features"][0].squeeze().cpu().detach()
     gradients = hook_dict["grads"][0].squeeze().cpu().detach()
-    
+
     handle_f.remove()
     handle_g.remove()
-    
+
     pooled_grads = torch.mean(gradients, dim = [1,2])
-    
+
     weighted_features = torch.zeros_like(features)
     for i in range(features.shape[0]):
         weighted_features[i] = features[i]*pooled_grads[i]
@@ -39,5 +40,5 @@ def get_gradcam(model,target_layer,image_tensor,label_idx, output_shape=None):
     image_out = np.moveaxis(image_tensor.squeeze().cpu().numpy(),0,2)
     image_out = (image_out - np.min(image_out))/(np.max(image_out)-np.min(image_out))
     del hook_dict
-    
+
     return output_cam, image_out

@@ -60,10 +60,12 @@ def generate_gradcam_visualizations(model: torch.nn.Module, device: torch.device
         images_path (str): Path to the dataset images.
         target_layer (torch.nn.Module): The target layer for Grad-CAM.
     """
+    print("dbg: generate_gradcam_visualizations")
     for category in categories:
         model.eval()
         images = imagedict[category]
         for image_name in images:
+            print(f"dbg: {image_name}")
             with Image.open(pjoin(images_path, category, image_name)) as img:
                 image_tensor = transform_test(img).unsqueeze(0).to(device)
                 shape = img.size[::-1]  # PIL uses (width, height)
@@ -72,14 +74,14 @@ def generate_gradcam_visualizations(model: torch.nn.Module, device: torch.device
                 save_xai_outputs(mask, np.array(img), category, image_name, output_path)
 
 def main(model_full_name, conf: utils.CONF):
-    
+
     BASE_DIR = conf.XAIEV_BASE_DIR
     CHECKPOINT_PATH = conf.MODEL_CP_PATH
 
     # Changable Parameters
     model_name = "_".join(model_full_name.split("_")[:-2])
     model_cpt = model_full_name + ".tar"
-   
+
     dataset_type = conf.DATASET_NAME
     dataset_split = conf.DATASET_SPLIT
     random_seed = conf.RANDOM_SEED
@@ -103,7 +105,7 @@ def main(model_full_name, conf: utils.CONF):
 
     epoch,trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
     print(f"Model checkpoint loaded. Epoch: {epoch}")
-    
+
     ##############
 
     # print(model) # confirm gradcam layer if necessary
@@ -116,7 +118,7 @@ def main(model_full_name, conf: utils.CONF):
     elif model_name == "vgg16":
         GRADCAM_TARGET_LAYER = model.features[-3]
 
-    print(GRADCAM_TARGET_LAYER)
+    print(f"{model_name} gradcam-target layer:", GRADCAM_TARGET_LAYER)
 
     # Prepare categories and images
     categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
@@ -126,6 +128,6 @@ def main(model_full_name, conf: utils.CONF):
 
     # Run Grad-CAM visualization
     generate_gradcam_visualizations(
-        model, device, categories, imagedict, label_idx_dict, 
+        model, device, categories, imagedict, label_idx_dict,
         output_path, IMAGES_PATH, GRADCAM_TARGET_LAYER
     )

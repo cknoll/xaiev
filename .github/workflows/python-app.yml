@@ -19,6 +19,9 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    env:
+      DEBUG_WITH_SSH: false
+
     steps:
     - uses: actions/checkout@v3
 
@@ -66,15 +69,17 @@ jobs:
       run: |
         cd atsds-demo
         test ! -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
-        xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1
-        test -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy
+        xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1 || echo "Command ended with exit code $?"
+        test -e ./XAI_results/simple_cnn_1_1/gradcam/test/00001/mask/000001.png.npy || echo "Test-Command ended with exit code $?"
+      # for some unknown reason the xaiev command might result in a nonzero exit code
 
     - name: create-eval-images and test presence of one image
       # takes about 30 seconds
       run: |
         cd atsds-demo
         test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
-        xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1
+        xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1 || echo "Command ended with exit code $?"
+        echo "Command ended with exit code $exit_code"
         test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/10/00001/000000.png
 
 
@@ -83,7 +88,7 @@ jobs:
       run: |
         cd atsds-demo
         test ! -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
-        xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method revelation
+        xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method revelation || echo "Command ended with exit code $?"
         test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/revelation/results.png
 
 
@@ -95,22 +100,28 @@ jobs:
         xaiev eval --xai-method gradcam --model simple_cnn_1_1 --eval-method occlusion
         test -e ./XAI_evaluation/simple_cnn_1_1/gradcam/test/occlusion/results.png
 
-    # temporary debugging (uncomment if necessary)
-    # - name: Setup tmate session
-    #   id: tmate
-    #   uses: mxschmitt/action-tmate@v3
-    #   with:
-    #     detached: true
 
-    # # this exports the ad-hoc ssh-connection address to an text file such that it can be accessed via API
-    # # this allows to connect to the debugging ssh server without manual copy-pasting
 
-    # - name: Capture tmate output
-    #   run: |
-    #       echo $(cat /home/runner/work/_temp/_runner_file_commands/* | grep ::notice::SSH | awk '{print $NF}') > tmate-connection.txt
 
-    # - name: Upload tmate logs as artifact
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: tmate-connection
-    #     path: tmate-connection.txt
+    # debugging (set env.DEBUG_WITH_SSH to true (see above))
+    - name: Setup tmate session
+      if: env.DEBUG_WITH_SSH == 'true'
+      id: tmate
+      uses: mxschmitt/action-tmate@v3
+      with:
+        detached: true
+
+    # this exports the ad-hoc ssh-connection address to an text file such that it can be accessed via API
+    # this allows to connect to the debugging ssh server without manual copy-pasting
+
+    - name: Capture tmate output
+      if: env.DEBUG_WITH_SSH == 'true'
+      run: |
+          echo $(cat /home/runner/work/_temp/_runner_file_commands/* | grep ::notice::SSH | awk '{print $NF}') > tmate-connection.txt
+
+    - name: Upload tmate logs as artifact
+      if: env.DEBUG_WITH_SSH == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: tmate-connection
+        path: tmate-connection.txt

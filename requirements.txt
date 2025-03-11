@@ -9,6 +9,7 @@ python-dotenv
 matplotlib
 numpy
 Pillow
+tabulate
 
 # for xai algorithm
 torchprism
@@ -16,3 +17,4 @@ scikit-image
 icecream
 lime
 saliency
+captum

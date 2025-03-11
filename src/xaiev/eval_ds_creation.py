@@ -7,7 +7,7 @@ from .utilmethods import get_dir_path, create_image_dict, generate_adversarial_e
 
 def create_occlusion_dataset(conf: utils.CONF):
     occlusion_condition = lambda adv_mask: adv_mask == 0
-    pct_range = range(10, 101, 10)
+    pct_range = range(0, 101, 10)
     eval_method = "occlusion"
     create_eval_dataset(conf, eval_method, occlusion_condition, pct_range)
 
