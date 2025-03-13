@@ -60,6 +60,24 @@ def main():
 
     parser.add_argument("--debug", action="store_true", help="start interactive debug mode; then exit")
 
+    parser.add_argument(
+        "--architecture",
+        type=str,
+        help="Architecture name (e.g., simple_cnn)",
+    )
+
+    parser.add_argument("--model_number", type=int, default=99, help="Model number")
+
+    parser.add_argument("--learning_rate", type=float, default=1e-4, help="Learning rate")
+
+    parser.add_argument("--batch_size", type=int, default=128, help="Batch size")
+
+    parser.add_argument("--weight_decay", type=float, default=1e-5, help="Weight decay")
+
+    parser.add_argument("--max_epochs", type=int, default=200, help="Maximum number of epochs")
+
+    parser.add_argument("--random_seed_train", type=int, default=1500, help="Random Seed for training")
+
     args = parser.parse_args()
 
     if args.bootstrap:
@@ -78,10 +96,10 @@ def main():
         IPS()
         exit()
 
-    if args.command == "train":
-        utils.ensure_model(args)
-        msg = "not yet implemented"
-        raise NotImplementedError(msg)
+    # if args.command == "train":
+    #     utils.ensure_model(args)
+    #     msg = "not yet implemented"
+    #     raise NotImplementedError(msg)
 
     elif args.command == "inference":
         utils.ensure_model(args)
@@ -110,6 +128,13 @@ def main():
     elif args.command == "eval":
         utils.ensure_xai_method_and_model(args)
         core.do_evaluation(CONF)
-
+    
+    elif args.command == "train":
+        print("Training model...")
+        if args.architecture in ["simple_cnn", "resnet50", "vgg16", "convnext"]:
+            # TODO: improve function name
+            core.train_model(args, CONF)
+        else:
+            raise NotImplementedError(msg)
     elif args.command == "visualize":
         core.do_visualization(CONF)
