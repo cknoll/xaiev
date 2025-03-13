@@ -15,22 +15,41 @@ import torch.nn.functional as F
 from torchvision import transforms
 
 ## Local libraries
-from .utilmethods import get_default_arg_parser, read_conf_from_dotenv, setup_environment, prepare_categories_and_images, create_output_directories, save_xai_outputs, normalize_image, get_rgb_heatmap
+from .utilmethods import (
+    get_default_arg_parser,
+    read_conf_from_dotenv,
+    setup_environment,
+    prepare_categories_and_images,
+    create_output_directories,
+    save_xai_outputs,
+    normalize_image,
+    get_rgb_heatmap,
+)
 from .ATSDS import ATSDS
 from .model import get_model, load_model
 from . import utils
 
 pjoin = os.path.join
 
-TRANSFORM_TEST = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
-def generate_xrai_visualizations(model: torch.nn.Module, device: torch.device, categories: list[str], 
-                                 imagedict: dict[str, list[str]], label_idx_dict: dict[str, int], 
-                                 output_path: str, images_path: str) -> None:
+TRANSFORM_TEST = transforms.Compose(
+    [
+        transforms.Resize(256),
+        transforms.CenterCrop((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+    ]
+)
+
+
+def generate_xrai_visualizations(
+    model: torch.nn.Module,
+    device: torch.device,
+    categories: list[str],
+    imagedict: dict[str, list[str]],
+    label_idx_dict: dict[str, int],
+    output_path: str,
+    images_path: str,
+) -> None:
     """
     Generate XRAI visualizations for each image in the dataset using precomputed IG masks.
 
@@ -66,31 +85,35 @@ def generate_xrai_visualizations(model: torch.nn.Module, device: torch.device, c
 
                 # Load the IG mask
                 ig_attribs = np.load(ig_path)
-                mask_raw = xrai_obj.GetMask(current_image_np, None, base_attribution = np.repeat(ig_attribs[:, :, np.newaxis], 3, axis=2))
+                mask_raw = xrai_obj.GetMask(
+                    current_image_np,
+                    None,
+                    base_attribution=np.repeat(ig_attribs[:, :, np.newaxis], 3, axis=2),
+                )
 
                 # Normalize the mask and resize
-                mask = normalize_image(F.interpolate(
-                    torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0),
-                    size=(512, 512),
-                    mode="bilinear"
-                ).squeeze().numpy())
+                mask = normalize_image(
+                    F.interpolate(
+                        torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0), size=(512, 512), mode="bilinear"
+                    )
+                    .squeeze()
+                    .numpy()
+                )
 
-                #smooth heatmap                                    
+                # smooth heatmap
                 mask_tensor = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
                 pooled_mask = avg_pooling(mask_tensor, kernel_size=129, stride=1)
 
-                grad_mask = (
-                    normalize_image(mask) +
-                    normalize_image(pooled_mask.squeeze().numpy()) / 100
-                )
-                np.save(pjoin(output_path, category, 'mask', image_name), grad_mask)
+                grad_mask = normalize_image(mask) + normalize_image(pooled_mask.squeeze().numpy()) / 100
+                np.save(pjoin(output_path, category, "mask", image_name), grad_mask)
 
                 # Overlay XRAI mask on the original image
                 overlay_image = mask_on_image_ig(normalize_image(mask), normalize_image(np.array(img)))
                 overlay_output_path = pjoin(output_path, category, "mask_on_image", image_name)
                 Image.fromarray((overlay_image * 255).astype(np.uint8)).save(overlay_output_path, "PNG")
 
-def avg_pooling(mask: torch.Tensor, kernel_size: int , stride: int) -> torch.Tensor:
+
+def avg_pooling(mask: torch.Tensor, kernel_size: int, stride: int) -> torch.Tensor:
     """
     Apply average pooling to a tensor.
 
@@ -100,11 +123,14 @@ def avg_pooling(mask: torch.Tensor, kernel_size: int , stride: int) -> torch.Ten
         stride (int): Stride of the pooling operation. Default is 1.
 
     Returns:
-    
+
         torch.Tensor: The pooled tensor.
     """
-    pooling = torch.nn.AvgPool2d(kernel_size=kernel_size, stride=stride, padding=kernel_size//2,count_include_pad=False)
+    pooling = torch.nn.AvgPool2d(
+        kernel_size=kernel_size, stride=stride, padding=kernel_size // 2, count_include_pad=False
+    )
     return pooling(mask)
+
 
 def mask_on_image_ig(mask, img, alpha=0.5):
     # Ensure the mask and image have the same dimensions
@@ -126,15 +152,16 @@ def mask_on_image_ig(mask, img, alpha=0.5):
     cam_on_img = (1 - alpha) * img + alpha * heatmap
     return np.copy(cam_on_img)
 
+
 def main(model_full_name, conf: utils.CONF):
-    
+
     BASE_DIR = conf.XAIEV_BASE_DIR
     CHECKPOINT_PATH = conf.MODEL_CP_PATH
 
     # Changable Parameters
     model_name = "_".join(model_full_name.split("_")[:-2])
     model_cpt = model_full_name + ".tar"
-   
+
     dataset_type = conf.DATASET_NAME
     dataset_split = conf.DATASET_SPLIT
     random_seed = conf.RANDOM_SEED
@@ -146,17 +173,17 @@ def main(model_full_name, conf: utils.CONF):
     device = setup_environment(random_seed)
 
     # Load dataset and dataloader
-    testset = ATSDS(root= BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=TRANSFORM_TEST)
+    testset = ATSDS(root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=TRANSFORM_TEST)
 
     # Load model
-    model = get_model(model_name, n_classes = testset.get_num_classes())
+    model = get_model(model_name, n_classes=testset.get_num_classes())
     model = model.to(device)
     model.eval()
     optimizer = torch.optim.Adam(model.parameters())
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
     # Load checkpoint
-    epoch,trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
+    epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
     print(f"Model checkpoint loaded. Epoch: {epoch}")
 
     # Prepare categories and images
@@ -167,7 +194,5 @@ def main(model_full_name, conf: utils.CONF):
 
     # Generate XRAI visualizations
     generate_xrai_visualizations(
-        model, device, categories, imagedict, label_idx_dict,
-        output_path, IMAGES_PATH
+        model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH
     )
-

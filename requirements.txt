@@ -5,10 +5,10 @@ urllib3
 python-dotenv
 opencv-python
 ipydex
-python-dotenv
 matplotlib
 numpy
 Pillow
+tabulate
 
 # for xai algorithm
 torchprism

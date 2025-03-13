@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 
 from . import utils
 
+
 def mask_on_image(mask: np.ndarray, img: np.ndarray, alpha: float = 0.5) -> np.ndarray:
     """
     Overlay an XAI mask on the original image.
@@ -29,6 +30,7 @@ def mask_on_image(mask: np.ndarray, img: np.ndarray, alpha: float = 0.5) -> np.n
     cam_on_img = (1 - alpha) * img + alpha * heatmap
     return np.copy(cam_on_img)
 
+
 def get_rgb_heatmap(mask: np.ndarray) -> np.ndarray:
     """Convert mask to RGB heatmap."""
     heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
@@ -36,9 +38,11 @@ def get_rgb_heatmap(mask: np.ndarray) -> np.ndarray:
     heatmap = np.float32(heatmap) / 255
     return np.copy(heatmap)
 
+
 def normalize_image(img: np.ndarray) -> np.ndarray:
     """Normalize image values to [0, 1]."""
-    return np.nan_to_num((img-img.min())/(img.max()-img.min()), nan=0.0, posinf=0.0,neginf=0.0)
+    return np.nan_to_num((img - img.min()) / (img.max() - img.min()), nan=0.0, posinf=0.0, neginf=0.0)
+
 
 def setup_environment(seed: int) -> torch.device:
     """
@@ -60,43 +64,46 @@ def setup_environment(seed: int) -> torch.device:
     return device
 
 
-#get a cutout based on a cutoff value
-def get_cutoff_area(mask,img,cutoff = 0.5):
+# get a cutout based on a cutoff value
+def get_cutoff_area(mask, img, cutoff=0.5):
     for i in range(3):
-        img[:,:,i] = np.where(mask>cutoff,img[:,:,i],0)
+        img[:, :, i] = np.where(mask > cutoff, img[:, :, i], 0)
     return np.copy(img)
 
-#get a cutout based on a percentage value.
-def get_percentage_of_image(image,mask,percentage, fill_value = 0.0):
+
+# get a cutout based on a percentage value.
+def get_percentage_of_image(image, mask, percentage, fill_value=0.0):
     masked_image = np.zeros_like(image)
     n = mask.size
-    sorted_values = np.sort(mask.flatten('K'))[::-1]
+    sorted_values = np.sort(mask.flatten("K"))[::-1]
 
-    index = int(n/100*percentage)
-    index_2 = n//100*percentage
+    index = int(n / 100 * percentage)
+    index_2 = n // 100 * percentage
     cutoff = sorted_values[index]
     for i in range(3):
-        masked_image[:,:,i] = np.where(mask-cutoff>0.0,image[:,:,i],fill_value)
+        masked_image[:, :, i] = np.where(mask - cutoff > 0.0, image[:, :, i], fill_value)
     return masked_image
 
 
-def get_percentage_of_image_1d(image,mask,percentage, fill_value = 0.0):
+def get_percentage_of_image_1d(image, mask, percentage, fill_value=0.0):
     image = normalize_image(image)
     mask = normalize_image(mask)
     masked_image = np.zeros_like(image)
     n = mask.size
-    sorted_values = np.sort(mask.flatten('K'))[::-1]
+    sorted_values = np.sort(mask.flatten("K"))[::-1]
 
-    index = int(n/100*percentage)
-    index_2 = n//100*percentage
+    index = int(n / 100 * percentage)
+    index_2 = n // 100 * percentage
     cutoff = sorted_values[index]
     for i in range(3):
-        masked_image = np.where(mask-cutoff>0.0,image,fill_value)
+        masked_image = np.where(mask - cutoff > 0.0, image, fill_value)
     return masked_image
 
-def get_contained_part(mask1,mask2):
-    mask1,mask2 = normalize_image(mask1),normalize_image(mask2)
+
+def get_contained_part(mask1, mask2):
+    mask1, mask2 = normalize_image(mask1), normalize_image(mask2)
     return np.array((mask1 == 1.0) & (mask2 == 1.0))
+
 
 def get_default_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
@@ -107,14 +114,19 @@ def get_default_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--model_cp_base_path", "-cp", type=str, help="directory of model checkpoints")
     parser.add_argument("--data_base_path", "-d", type=str, help="data path")
     # parser.add_argument('--output_path', type=str, default="data/XAI_results/", help="Path to save outputs.")
-    parser.add_argument('--dataset_type', type=str, default="atsds_large", help="Type of the dataset.")
-    parser.add_argument('--dataset_split', type=str, default="test", help="Dataset split (e.g., 'train', 'test').")
-    parser.add_argument('--random_seed', type=int, default=1414, help="Random seed for reproducibility.")
-    parser.add_argument('--batch_size', type=int, default=1, help="Batch size for data loader.")
-    parser.add_argument('--num_workers', type=int, default=2, help="Number of workers for data loading.")
-    parser.add_argument('--num_samples', type=int, default=100, help="Number of images for PRISM explanation.")
+    parser.add_argument("--dataset_type", type=str, default="atsds_large", help="Type of the dataset.")
+    parser.add_argument(
+        "--dataset_split", type=str, default="test", help="Dataset split (e.g., 'train', 'test')."
+    )
+    parser.add_argument("--random_seed", type=int, default=1414, help="Random seed for reproducibility.")
+    parser.add_argument("--batch_size", type=int, default=1, help="Batch size for data loader.")
+    parser.add_argument("--num_workers", type=int, default=2, help="Number of workers for data loading.")
+    parser.add_argument(
+        "--num_samples", type=int, default=100, help="Number of images for PRISM explanation."
+    )
 
     return parser
+
 
 # TODO: rename "category" to "class_" etc.
 def generate_adversarial_examples(
@@ -140,7 +152,7 @@ def generate_adversarial_examples(
         pass
 
     for pct in pct_range:
-        print(f"Processing percentage: {pct}%")
+        print(f"Processing percentage: {pct / 10}%")
         # note: we do not apply the limit here because the trained model requires all classes to be present
         for category in categories:
             output_dir = os.path.join(adv_folder, str(pct), category)
@@ -150,16 +162,22 @@ def generate_adversarial_examples(
 
             for imagename in images[:limit]:
                 # Load original image and background
-                current_img = normalize_image(np.array(Image.open(os.path.join(img_path, category, imagename))))
-                current_background = normalize_image(np.array(Image.open(os.path.join(background_dir, category, imagename))))
+                current_img = normalize_image(
+                    np.array(Image.open(os.path.join(img_path, category, imagename)))
+                )
+                current_background = normalize_image(
+                    np.array(Image.open(os.path.join(background_dir, category, imagename)))
+                )
 
                 # Load and process XAI mask
                 xai_mask = np.load(os.path.join(xai_dir, category, "mask", f"{imagename}.npy"))
-                adv_mask = normalize_image(get_percentage_of_image(np.ones_like(current_img), xai_mask, pct / 10))
+                adv_mask = normalize_image(
+                    get_percentage_of_image(np.ones_like(current_img), xai_mask, pct / 10)
+                )
 
                 # Create adversarial example using the mask condition
                 adv_example = np.where(mask_condition(adv_mask), current_img, current_background)
-                adv_example_save = Image.fromarray((adv_example * 255).astype('uint8'))
+                adv_example_save = Image.fromarray((adv_example * 255).astype("uint8"))
 
                 # Save adversarial example
                 adv_example_save.save(os.path.join(output_dir, imagename))
@@ -203,6 +221,7 @@ def get_dir_path(*parts, check_exists=True):
         raise FileNotFoundError(msg)
     return path
 
+
 def prepare_categories_and_images(image_path: str) -> tuple[list[str], dict[str, int], dict[str, list[str]]]:
     """
     Prepare categories and image file lists for each category in the dataset.
@@ -220,6 +239,7 @@ def prepare_categories_and_images(image_path: str) -> tuple[list[str], dict[str,
     image_dict = {cat: os.listdir(os.path.join(image_path, cat)) for cat in categories}
     return categories, label_idx_dict, image_dict
 
+
 def create_output_directories(output_path: str, categories: list[str]) -> None:
     """
     Create the necessary output directories to store the results.
@@ -234,7 +254,9 @@ def create_output_directories(output_path: str, categories: list[str]) -> None:
             os.makedirs(os.path.join(output_path, category, output_type), exist_ok=True)
 
 
-def save_xai_outputs(mask: np.ndarray, original_image: np.ndarray, category: str, image_name: str, output_path: str) -> None:
+def save_xai_outputs(
+    mask: np.ndarray, original_image: np.ndarray, category: str, image_name: str, output_path: str
+) -> None:
     """
     General function to save the mask and overlay image generated by any XAI method.
 
@@ -256,7 +278,13 @@ def save_xai_outputs(mask: np.ndarray, original_image: np.ndarray, category: str
     Image.fromarray(overlay_image).save(overlay_path, "PNG")
 
 
-def load_checkpoint(filepath: str, model: torch.nn.Module, optimizer: torch.optim.Optimizer, scheduler: torch.optim.lr_scheduler, device: torch.device) -> tuple[int, dict]:
+def load_checkpoint(
+    filepath: str,
+    model: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    scheduler: torch.optim.lr_scheduler,
+    device: torch.device,
+) -> tuple[int, dict]:
     """
     Load a model checkpoint from the specified file and restore model, optimizer, and scheduler states.
 
@@ -271,8 +299,8 @@ def load_checkpoint(filepath: str, model: torch.nn.Module, optimizer: torch.opti
         epoch (int): The epoch the model was at when the checkpoint was saved.
         trainstats (dict): The training statistics stored in the checkpoint.
     """
-    checkpoint = torch.load(filepath, map_location= device, weights_only=False)
-    model.load_state_dict(checkpoint['model'])
-    optimizer.load_state_dict(checkpoint['optimizer'])
-    scheduler.load_state_dict(checkpoint['scheduler'])
-    return checkpoint['epoch'], checkpoint['trainstats']
+    checkpoint = torch.load(filepath, map_location=device, weights_only=False)
+    model.load_state_dict(checkpoint["model"])
+    optimizer.load_state_dict(checkpoint["optimizer"])
+    scheduler.load_state_dict(checkpoint["scheduler"])
+    return checkpoint["epoch"], checkpoint["trainstats"]
