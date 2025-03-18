@@ -162,7 +162,6 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
     # Load dataset and create dataloaders
     trainset = ATSDS(root=BASE_DIR, dataset_type= dataset_type, split="train", transform=transform_train)
     testset = ATSDS(root=BASE_DIR, dataset_type= dataset_type, split="test", transform=transform_test)
-    num_classes = testset.get_num_classes()
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=2)
     testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
 
@@ -221,7 +220,7 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
 
         # Testing step
         accuracy_per_class, top5_accuracy_per_class, test_loss = calculate_accuracy_and_loss(
-            model, num_classes, testloader, loss_criterion, device)
+            model, testset.get_num_classes(), testloader, loss_criterion, device)
         test_losses.append(test_loss)
         print(f"Test Loss: {test_loss:.4f}")
         print(f"Test Accuracy: {accuracy_per_class.mean():.2%} | Test Top-5 Accuracy: {top5_accuracy_per_class.mean():.2%}")
@@ -230,21 +229,24 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
         correct_top5_test_s.append(top5_accuracy_per_class)
         total_test_s.append(total)
 
-        # Save model
-        save_model(model, optimizer, scheduler,
-                   [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
-                    [correct_test_s, correct_top5_test_s, total_test_s]],
-                   epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
-                #    epoch, f"Code/model/{model_name}_{model_number}_{epoch}.tar")
+        # # Save model
+        # save_model(model, optimizer, scheduler,
+        #            [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
+        #             [correct_test_s, correct_top5_test_s, total_test_s]],
+        #            epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
 
         # Update learning rate
         scheduler.step()
         epoch += 1
+    
+    # Save model
+    save_model(model, optimizer, scheduler,
+                [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
+                [correct_test_s, correct_top5_test_s, total_test_s]],
+                epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
 
     print("Training Complete!")
     
-    
-# def main(model_name, model_number, dataset_type, learning_rate, batch_size, weight_decay, max_epochs, random_seed):
 def main(args, conf: utils.CONF):
 
     BASE_DIR = conf.XAIEV_BASE_DIR
@@ -256,4 +258,4 @@ def main(args, conf: utils.CONF):
     np.random.seed(args.random_seed_train) 
 
     start_training(BASE_DIR, CHECKPOINT_PATH, args.architecture, args.model_number, dataset_type, args.learning_rate, args.batch_size, args.weight_decay, args.max_epochs)
-  
+
