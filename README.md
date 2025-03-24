@@ -147,7 +147,7 @@ The four steps of the pipeline (with example calls):
   `--max_epochs 50`
 
 - (4) **`--learning_rate`** (default: 1e-4):
-  Specifies the learning for training.
+  Specifies the initial learning rate for training.
   **Example:**
   `--learning_rate 1e-4`
 
@@ -162,7 +162,7 @@ The four steps of the pipeline (with example calls):
   `--random_seed_train 1414`
 
 - (6) **`--weight_decay`** (default: 1e-5):
-  Specifies the weight decay  for training.
+  Specifies the weight decay  for training which affects the overall learning rate.
   **Example:**
   `--weight_decay 1e-5`
 
