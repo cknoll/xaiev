@@ -9,6 +9,7 @@ on:
     - main
     - test_ci
     - CK_dev
+    - TM_dev
   pull_request:
     branches:
     - main
@@ -63,6 +64,14 @@ jobs:
         xaiev --help
         xaiev --version
         xaiev --bootstrap
+
+    - name: train model
+      # on the demo dataset this only takes a few seconds
+      run: |
+        cd atsds-demo
+        test ! -e ./model_checkpoints/simple_cnn_2_2.tar
+        xaiev train --architecture simple_cnn --max_epochs 2 --model_number 2
+        test -e ./model_checkpoints/simple_cnn_2_2.tar
 
     - name: create-saliency-maps
       # on the demo dataset this only takes a few seconds

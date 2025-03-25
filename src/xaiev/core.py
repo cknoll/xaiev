@@ -71,6 +71,11 @@ def create_eval_images(conf: utils.CONF):
     eval_ds_creation.create_revelation_dataset(conf)
     eval_ds_creation.create_occlusion_dataset(conf)
 
+def train_model(*args, **kwargs):
+    from . import training
+
+    training.main(*args, **kwargs)
+
 
 def do_evaluation(conf: utils.CONF):
     from . import evaluation

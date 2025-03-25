@@ -98,10 +98,10 @@ The expected path structure is as follows (as shown in the dataset "atsds_large"
 
 The four steps of the pipeline (with example calls):
 - (1) model training,
-    - `xaiev train --model simple_cnn_1_1`
+    - `xaiev train --architecture simple_cnn`
+    - `xaiev train --architecture simple_cnn --max_epochs 50 --model_number 2`
 - (2) applying XAI algorithms to generate weighted saliency maps,
     - `xaiev create-saliency-maps --xai-method gradcam --model simple_cnn_1_1`
-    - `xaiev create-saliency-maps --xai-method int_g --model simple_cnn_1_1`
 - (3) generating new test images with varying percentages of "important" pixels removed or retained, and
     - `xaiev create-eval-images --xai-method gradcam --model simple_cnn_1_1`
 - (4) statistically evaluating accuracy changes on these test images and comparison to the ground truth.
@@ -129,6 +129,42 @@ The four steps of the pipeline (with example calls):
   **Default:** `1414`
   **Example:**
   `--random_seed 1414`
+
+#### Arguments for `xaiev train`
+- (1) **`--architecture`** (required):
+  Specifies the Architecture name.
+  **Example:**
+  `--architecture simple_cnn`
+
+- (2) **`--model_number`** (default: 99):
+  Specifies the model Number for saving the model.
+  **Example:**
+  `--model_number 2`
+
+- (3) **`--max_epochs`** (default: 200):
+  Specifies the number of epochs for training.
+  **Example:**
+  `--max_epochs 50`
+
+- (4) **`--learning_rate`** (default: 1e-4):
+  Specifies the initial learning rate for training.
+  **Example:**
+  `--learning_rate 1e-4`
+
+- (5) **`--batch_size`** (default: 128):
+  Specifies the batch size rate for training.
+  **Example:**
+  `--batch_size 32`
+
+- (6) **`--random_seed_train`** (default: 1500):
+  Specifies the random seed for training.
+  **Example:**
+  `--random_seed_train 1414`
+
+- (6) **`--weight_decay`** (default: 1e-5):
+  Specifies the weight decay  for training which affects the overall learning rate.
+  **Example:**
+  `--weight_decay 1e-5`
 
 #### Additional calls:
 
