@@ -3,6 +3,8 @@ import glob
 import pickle
 
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+
 import numpy as np
 from ipydex import IPS
 import tabulate
@@ -107,7 +109,7 @@ class EvaluationManager:
         plt.rcParams["font.family"] = "serif"
         mm = 1 / 25.4  # mm to inch
         scale = 1.75
-        fs = [75 * mm * scale, 35 * mm * scale]
+        fs = [75 * mm * scale, 39 * mm * scale]
         fig = plt.figure(figsize=fs, dpi=100)
 
         for fpath in self.files:
@@ -124,18 +126,27 @@ class EvaluationManager:
         if self.plot:
 
             model_display_name = utils.get_model_display_name(model_name)
-            plt.title(f"{model_display_name} ({eval_method})")
+            plt.title(f"{model_display_name} ({eval_method})", y=1.2)
             img_fpath = pjoin(self.conf.XAIEV_BASE_DIR, f"img_{model_name}_{eval_method}.pdf")
-            plt.xlim(-0.2, 11.8)
+            plt.xlim(-0.2, 10.8)
             plt.ylim(1, 105)
-            plt.xlabel(r"$T$ [\%]")
-            plt.ylabel(r"Accuracy [\%]")
-            plt.legend(bbox_to_anchor=(0.85, 0.8), loc="upper left")
-            plt.subplots_adjust(bottom=0.22, left=0.12, right=0.87)
+            plt.xlabel(r"$T$")
+            plt.ylabel(r"Accuracy")
+
+            plt.xticks(ticks=range(0, 11, 2))
+            # Apply percent formatter to the x- y-tick labels
+            plt.gca().xaxis.set_major_formatter(FuncFormatter(percent_formatter))
+            plt.gca().yaxis.set_major_formatter(FuncFormatter(percent_formatter))
+
+            # plt.legend(bbox_to_anchor=(0.7, 0.8), loc="upper left")
+            # plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncols=4, mode="expand", borderaxespad=0.)
+            plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left', ncols=4, mode="expand", borderaxespad=0.)
+            plt.subplots_adjust(bottom=0.19, left=0.12, right=0.98, top=0.78)
             # if model_name == "simple_cnn" and eval_method == "revelation":
             #     plt.show()
             #     exit()
 
+            fig.align_titles()
             plt.savefig(img_fpath)
             print(f"File written: {img_fpath}")
 
@@ -178,3 +189,7 @@ class EvaluationManager:
 
     def calculate_areas(self, xx, yy):
         pass
+
+
+def percent_formatter(x, pos):
+    return f'{int(x)}\\%'
