@@ -119,7 +119,7 @@ def save_model(model, optimizer, scheduler, train_stats, epoch, filepath="model/
         'model': model.state_dict(),
         'optimizer': optimizer.state_dict(),
         'scheduler': scheduler.state_dict(),
-        'train_stats': train_stats,
+        'trainstats': train_stats,
         'epoch': epoch
     }
 
@@ -244,6 +244,7 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
                 [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
                 [correct_test_s, correct_top5_test_s, total_test_s]],
                 epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
+
 
     print("Training Complete!")
     
