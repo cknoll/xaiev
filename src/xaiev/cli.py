@@ -149,7 +149,7 @@ def main():
     
     elif args.command == "train":
         print("Training model...")
-        if args.architecture in ["simple_cnn", "resnet50", "vgg16", "convnext_tiny"]:
+        if args.architecture in ["simple_cnn", "resnet50", "vgg16", "convnext_tiny", "alexnet_simple"]:
             # TODO: improve function name
             core.train_model(args, CONF)
         else:

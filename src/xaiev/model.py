@@ -6,10 +6,8 @@ import torchvision.models
 
 
 def get_model(model_name, n_classes):
-
     # drop extensions like "_1_1"
     model_name = get_short_model_name(model_name)
-
     if model_name == "resnet18":
         base_model = torchvision.models.resnet18()
         classifier_layer = torch.nn.Linear(in_features=512, out_features=n_classes, bias=True)
@@ -58,6 +56,7 @@ def get_model(model_name, n_classes):
         model = base_model
         model.classifier[-1] = classifier_layer
         return model
+
     if model_name == "densenet":
         base_model = torchvision.models.densenet121()
         classifier_layer = torch.nn.Linear(in_features=1024, out_features=n_classes, bias=True)
@@ -80,6 +79,11 @@ def get_model(model_name, n_classes):
         return SimpleCNN(n_classes)
     if model_name == "advanced_cnn":
         return ImprovedCNN(n_classes)
+    if model_name == "alexnet_simple":
+        return Alexnet_simple(n_classes)
+    else:
+        print(model_name)
+        print("fail")
 
 
 def get_short_model_name(model_full_name):
@@ -101,8 +105,7 @@ def load_model(model, optimizer, scheduler, filepath, device):
     model.load_state_dict(cpt["model"])
     optimizer.load_state_dict(cpt["optimizer"])
     scheduler.load_state_dict(cpt["scheduler"])
-    return cpt["epoch"], cpt["trainstats"]
-
+    return cpt["epoch"], cpt["train_stats"] # changed from trainstats to train_stats
 
 def test_model(model, testloader, criterion, device, debug_prints=False):
     model.eval()
@@ -211,6 +214,40 @@ class ImprovedCNN(nn.Module):
         x = self.fc1(x)
         return x
 
+class Alexnet_simple(nn.Module):
+    def __init__(self, n_classes):
+        super(Alexnet_simple, self).__init__()
+        self.conv1 = nn.Conv2d(3, 96, kernel_size=11, stride=4, padding=1)
+        self.pool1 = nn.MaxPool2d(kernel_size=3, stride=2)
+
+        self.conv2 = nn.Conv2d(96, 256, kernel_size=5, stride=1, padding=2)
+        self.pool2 = nn.MaxPool2d(kernel_size=3, stride=2)
+
+        self.conv3 = nn.Conv2d(256, 384, kernel_size=3, stride=1, padding=1)
+        self.conv4 = nn.Conv2d(384, 384, kernel_size=3, stride=1, padding=1)
+        self.conv5 = nn.Conv2d(384, 256, kernel_size=3, stride=1, padding=1)
+        self.pool3 = nn.MaxPool2d(kernel_size=3, stride=2)
+
+        self.fc1 = nn.Linear(6400, n_classes)
+        self.dropout = nn.Dropout(p=0.7)
+        # self.fc2 = nn.Linear(4096, 4096)  # No of filters=32,48*48 =resized image size after convolution
+        # self.fc3 = nn.Linear(4096, 3) #ouput features=1,for continuous result in regression
+
+    def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = self.pool1(x)
+        x = torch.relu(self.conv2(x))
+        x = self.pool2(x)
+        x = torch.relu(self.conv3(x))
+        x = torch.relu(self.conv4(x))
+        x = torch.relu(self.conv5(x))
+        x = self.pool3(x)
+        x = x.view(x.size(0), -1)  # Flatten the tensor (-1 =automatic flattening)
+        # x = torch.relu(self.fc1(x))  # Apply activation function
+        # x = torch.relu(self.fc2(x))
+        x = self.dropout(x)
+        x = self.fc1(x)
+        return x
 
 class DWConfBlock(nn.Module):
     r"""ConvNeXt Block. There are two equivalent implementations:

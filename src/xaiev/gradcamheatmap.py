@@ -99,9 +99,9 @@ def main(model_full_name, conf: utils.CONF):
 
     BASE_DIR = conf.XAIEV_BASE_DIR
     CHECKPOINT_PATH = conf.MODEL_CP_PATH
-
+    print("modle full name:"+model_full_name)
     # Changable Parameters
-    model_name = "_".join(model_full_name.split("_")[:-2])
+    model_name = "_".join(model_full_name.split("_")[:-2]) #might be redundant
     model_cpt = model_full_name + ".tar"
 
     dataset_type = conf.DATASET_NAME
@@ -115,7 +115,6 @@ def main(model_full_name, conf: utils.CONF):
     device = setup_environment(random_seed)
 
     testset = ATSDS(root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=transform_test)
-
     model = get_model(model_name, n_classes=testset.get_num_classes())
     model = model.to(device)
     model.eval()
@@ -139,6 +138,8 @@ def main(model_full_name, conf: utils.CONF):
         GRADCAM_TARGET_LAYER = model.features[-1][-1].block[0]
     elif model_name == "vgg16":
         GRADCAM_TARGET_LAYER = model.features[-3]
+    elif model_name == "alexnet_simple":
+        GRADCAM_TARGET_LAYER = model.conv5
 
     print(f"{model_name} gradcam-target layer:", GRADCAM_TARGET_LAYER)
 

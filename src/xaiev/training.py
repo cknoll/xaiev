@@ -170,10 +170,10 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
     loss_criterion = nn.CrossEntropyLoss().to(device)
     optimizer = optim.AdamW(model.parameters(), lr=initial_learning_rate, weight_decay=weight_decay)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, max_epochs)
-
+    #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
     # Initialize variables for tracking
     epoch = 0
-    train_loss = 0.0
+    # train_loss = 0.0 #might not be correct here
     correct_train_s, correct_top5_train_s, total_train_s = [], [], []
     correct_test_s, correct_top5_test_s, total_test_s = [], [], []
     train_losses, test_losses = [], []
@@ -185,7 +185,7 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
         correct = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
         correct_top5 = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
         total = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
-
+        train_loss = 0.0
         # Use tqdm to show progress for training
         with tqdm(trainloader, desc=f"Epoch {epoch+1}/{max_epochs} Training", unit="batch") as pbar:
             for i, (inputs, labels) in enumerate(pbar):
