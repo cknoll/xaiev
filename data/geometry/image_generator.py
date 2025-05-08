@@ -8,22 +8,15 @@ import math
 # The parent class for all shapes, use this class to change the path to save pictures
 # and the number of images to be generated
 class Geometry():
-    def __init__(self,train):
+    def __init__(self):
         # define the size of the picture,
         # the folder for storing images and the number of images to be generated
         self.pic_size = 224  # 200x200 px image
-        if train == False:
-            self.output_folder = "imgs_main/test/10_ellipse"
-            self.background_folder = "imgs_background/test/10_ellipse"
-            self.num = 50
-        else:
-            self.output_folder = "imgs_main/train/10_ellipse"
-            self.background_folder = "imgs_background/train/10_ellipse"
-            self.num = 450
+        self.output_folder = ""
+        self.background_folder = ""
+        self.num = 50
         self.color = []
         self.name = ''
-        os.makedirs(self.output_folder, exist_ok=True)
-        os.makedirs(self.background_folder, exist_ok=True)
 
     # common method for generating background noise
     def draw_background(self, i):
@@ -81,7 +74,17 @@ class Geometry():
 # class for generating rectangles
 class Rectangle(Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/01_rectangle"
+            self.background_folder = "imgs_background/test/01_rectangle"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/01_rectangle"
+            self.background_folder = "imgs_background/train/01_rectangle"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         self.rectangle_width = []
         self.rectangle_height = []
         # randomly generate height/width of all rectangles and make sure height!=width(range:30-80)
@@ -132,7 +135,17 @@ class Rectangle(Geometry):
 class Square(Geometry):
 
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/02_square"
+            self.background_folder = "imgs_background/test/02_square"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/02_square"
+            self.background_folder = "imgs_background/train/02_square"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         self.size = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
         self.name = 'square'
@@ -166,7 +179,17 @@ class Square(Geometry):
 # class for generating rectangles
 class Circle(Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/03_circle"
+            self.background_folder = "imgs_background/test/03_circle"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/03_circle"
+            self.background_folder = "imgs_background/train/03_circle"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
@@ -189,7 +212,17 @@ class Circle(Geometry):
 
 class Triangle(Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/04_triangle"
+            self.background_folder = "imgs_background/test/04_triangle"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/04_triangle"
+            self.background_folder = "imgs_background/train/04_triangle"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.bottom_len = np.random.randint(60, 130, size=self.num)
         self.height = np.random.randint(60, 130, size=self.num)
@@ -224,7 +257,17 @@ class Triangle(Geometry):
 
 class Trapezoid(Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/05_trapezoid"
+            self.background_folder = "imgs_background/test/05_trapezoid"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/05_trapezoid"
+            self.background_folder = "imgs_background/train/05_trapezoid"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.bottom_length = []
         self.top_length = []
@@ -267,7 +310,17 @@ class Trapezoid(Geometry):
 
 class Parallelogram(Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/06_parallelogram"
+            self.background_folder = "imgs_background/test/06_parallelogram"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/06_parallelogram"
+            self.background_folder = "imgs_background/train/06_parallelogram"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.length = np.random.randint(30, 80, size=self.num)
         self.height = np.random.randint(30, 80, size=self.num)
@@ -307,7 +360,17 @@ class Parallelogram(Geometry):
 
 class Pentagon(Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/07_pentagon"
+            self.background_folder = "imgs_background/test/07_pentagon"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/07_pentagon"
+            self.background_folder = "imgs_background/train/07_pentagon"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
@@ -339,7 +402,17 @@ class Pentagon(Geometry):
 
 class Hexagon(Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/08_hexagon"
+            self.background_folder = "imgs_background/test/08_hexagon"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/08_hexagon"
+            self.background_folder = "imgs_background/train/08_hexagon"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
@@ -371,7 +444,17 @@ class Hexagon(Geometry):
 
 class Semicircle (Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/09_semicircle"
+            self.background_folder = "imgs_background/test/09_semicircle"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/09_semicircle"
+            self.background_folder = "imgs_background/train/09_semicircle"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
@@ -395,7 +478,17 @@ class Semicircle (Geometry):
 
 class Ellipse (Geometry):
     def __init__(self, train):
-        super().__init__(train)
+        super().__init__()
+        if train == False:
+            self.output_folder = "imgs_main/test/10_ellipse"
+            self.background_folder = "imgs_background/test/10_ellipse"
+            self.num = 50
+        else:
+            self.output_folder = "imgs_main/train/10_ellipse"
+            self.background_folder = "imgs_background/train/10_ellipse"
+            self.num = 450
+        os.makedirs(self.output_folder, exist_ok=True)
+        os.makedirs(self.background_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius_x = []
         self.radius_y = []
@@ -424,50 +517,50 @@ class Ellipse (Geometry):
                                        center_width, center_height, angle)
         return drawn_image, tag
 # create instances of each class
-# rect = Rectangle(train=True)
-# rect.save_images()
-# rect = Rectangle(train=False)
-# rect.save_images()
+rect = Rectangle(train=True)
+rect.save_images()
+rect = Rectangle(train=False)
+rect.save_images()
 
-# sqr = Square(train=True)
-# sqr.save_images()
-# sqr = Square(train=False)
-# sqr.save_images()
+sqr = Square(train=True)
+sqr.save_images()
+sqr = Square(train=False)
+sqr.save_images()
 
-# cir = Circle(train=True)
-# cir.save_images()
-# cir = Circle(train=False)
-# cir.save_images()
+cir = Circle(train=True)
+cir.save_images()
+cir = Circle(train=False)
+cir.save_images()
 
-# tri = Triangle(train=True)
-# tri.save_images()
-# tri = Triangle(train=False)
-# tri.save_images()
+tri = Triangle(train=True)
+tri.save_images()
+tri = Triangle(train=False)
+tri.save_images()
 
-# trape = Trapezoid(train=True)
-# trape.save_images()
-# trape = Trapezoid(train=False)
-# trape.save_images()
+trape = Trapezoid(train=True)
+trape.save_images()
+trape = Trapezoid(train=False)
+trape.save_images()
 
-# para = Parallelogram(train=True)
-# para.save_images()
-# para = Parallelogram(train=False)
-# para.save_images()
+para = Parallelogram(train=True)
+para.save_images()
+para = Parallelogram(train=False)
+para.save_images()
 
-# penta = Pentagon(train=True)
-# penta.save_images()
-# penta = Pentagon(train=False)
-# penta.save_images()
+penta = Pentagon(train=True)
+penta.save_images()
+penta = Pentagon(train=False)
+penta.save_images()
 
-# hex = Hexagon(train=True)
-# hex.save_images()
-# hex = Hexagon(train=False)
-# hex.save_images()
+hex = Hexagon(train=True)
+hex.save_images()
+hex = Hexagon(train=False)
+hex.save_images()
 
-# semicir = Semicircle(train=True)
-# semicir.save_images()
-# semicir = Semicircle(train=False)
-# semicir.save_images()
+semicir = Semicircle(train=True)
+semicir.save_images()
+semicir = Semicircle(train=False)
+semicir.save_images()
 
 ellip = Ellipse(train=True)
 ellip.save_images()
