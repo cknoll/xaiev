@@ -5,6 +5,8 @@ import os
 import random
 import hashlib
 import math
+
+from sympy import true
 # The parent class for all shapes, use this class to change the path to save pictures
 # and the number of images to be generated
 class Geometry():
@@ -14,6 +16,7 @@ class Geometry():
         self.pic_size = 224  # 200x200 px image
         self.output_folder = ""
         self.background_folder = ""
+        self.mask_folder = ""
         self.num = 50
         self.color = []
         self.name = ''
@@ -35,7 +38,7 @@ class Geometry():
         number_of_duplicates_found = 0
         i = 0
         while i < self.num:
-            drawn_image, tag = self.draw_geometry(i)
+            drawn_image, mask, tag = self.draw_geometry(i)
             # Check boundaries
             duplicate_found_flag = False
             if not self.check_boundaries(drawn_image, self.color[i]):
@@ -53,7 +56,10 @@ class Geometry():
                     i += 1
                     image_name = self.name + f"_{i:03d}.png"
                     image_path = os.path.join(self.output_folder, image_name)
+                    mask_name = self.name + f"_{i:03d}.png"
+                    mask_path = os.path.join(self.mask_folder, mask_name)
                     cv2.imwrite(image_path, drawn_image)
+                    cv2.imwrite(mask_path, mask)
         print(f"In the dataset generation there were discarded {number_of_duplicates_found} duplicate images")
 
     def check_boundaries(self, image, color):
@@ -78,13 +84,16 @@ class Rectangle(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/01_rectangle"
             self.background_folder = "imgs_background/test/01_rectangle"
+            self.mask_folder = "imgs_mask/test/01_rectangle"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/01_rectangle"
             self.background_folder = "imgs_background/train/01_rectangle"
+            self.mask_folder = "imgs_mask/train/01_rectangle"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         self.rectangle_width = []
         self.rectangle_height = []
         # randomly generate height/width of all rectangles and make sure height!=width(range:30-80)
@@ -100,7 +109,7 @@ class Rectangle(Geometry):
 
     # Draw a rectangle
     def draw_rectangle(self, base_image, rectangle_width, rectangle_height, color, center_width, center_height, angle):
-
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         rotation_matrix = cv2.getRotationMatrix2D((center_width, center_height), angle, 1)
 
         # define the four vertexes of the rectangle
@@ -116,7 +125,7 @@ class Rectangle(Geometry):
 
         # Use the vertexes to draw a rectangle and fill with a random color
         rotated_points = rotated_points.astype(int)
-        return cv2.fillPoly(base_image, [rotated_points], color)  # 红色填充
+        return cv2.fillPoly(base_image, [rotated_points], color), cv2.fillPoly(mask_background, [rotated_points], color = (255, 255, 255) ) 
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -125,9 +134,9 @@ class Rectangle(Geometry):
         center_width = random.randint(30, 210)
         center_height = random.randint(30, 210)
         tag = [angle, center_width, center_height]
-        drawn_image = self.draw_rectangle(base_image, self.rectangle_width[i], self.rectangle_height[i],
+        drawn_image, mask = self.draw_rectangle(base_image, self.rectangle_width[i], self.rectangle_height[i],
                                           tuple(self.color[i].tolist()), center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
     # function for calling draw function and save images
 
 
@@ -139,19 +148,23 @@ class Square(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/02_square"
             self.background_folder = "imgs_background/test/02_square"
+            self.mask_folder = "imgs_mask/test/02_square"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/02_square"
             self.background_folder = "imgs_background/train/02_square"
+            self.mask_folder = "imgs_mask/train/02_square"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         self.size = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
         self.name = 'square'
 
     def draw_square(self, base_image, size, color, center_width, center_height, angle):
         # Draw a rectangle
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         rotation_matrix = cv2.getRotationMatrix2D((center_width, center_height), angle, 1)
 
         rect_points = np.array([
@@ -164,7 +177,7 @@ class Square(Geometry):
         rotated_points = cv2.transform(np.array([rect_points]), rotation_matrix)[0]
 
         rotated_points = rotated_points.astype(int)
-        return cv2.fillPoly(base_image, [rotated_points], color)
+        return cv2.fillPoly(base_image, [rotated_points], color), cv2.fillPoly(mask_background, [rotated_points], color = (255, 255, 255) ) 
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -172,9 +185,9 @@ class Square(Geometry):
         center_width = random.randint(30, 210)
         center_height = random.randint(30, 210)
         tag = [angle, center_width, center_height]
-        drawn_image = self.draw_square(base_image, self.size[i], tuple(self.color[i].tolist()),
+        drawn_image, mask = self.draw_square(base_image, self.size[i], tuple(self.color[i].tolist()),
                                        center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
 # class for generating rectangles
 class Circle(Geometry):
@@ -183,13 +196,16 @@ class Circle(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/03_circle"
             self.background_folder = "imgs_background/test/03_circle"
+            self.mask_folder = "imgs_mask/test/03_circle"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/03_circle"
             self.background_folder = "imgs_background/train/03_circle"
+            self.mask_folder = "imgs_mask/train/03_circle"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
@@ -197,16 +213,17 @@ class Circle(Geometry):
 
     # draw the circle(since it makes no difference rotating the circle, we only need different center points)
     def draw_circle(self, base_image, radius, color, center_width, center_height):
-        return cv2.circle(base_image, (center_width, center_height), radius, color, -1)
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
+        return cv2.circle(base_image, (center_width, center_height), radius, color, -1), cv2.circle(mask_background, (center_width, center_height), radius, (255,255,255), -1)
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
         center_width = random.randint(30, 210)
         center_height = random.randint(30, 210)
         tag = [self.radius[i], center_width, center_height]
-        drawn_image = self.draw_circle(base_image, self.radius[i], tuple(self.color[i].tolist()),
+        drawn_image, mask = self.draw_circle(base_image, self.radius[i], tuple(self.color[i].tolist()),
                                        center_width, center_height)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
     # it does the same thing as the previous save_images function
 
@@ -216,13 +233,16 @@ class Triangle(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/04_triangle"
             self.background_folder = "imgs_background/test/04_triangle"
+            self.mask_folder = "imgs_mask/test/04_triangle"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/04_triangle"
             self.background_folder = "imgs_background/train/04_triangle"
+            self.mask_folder = "imgs_mask/train/04_triangle"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.bottom_len = np.random.randint(60, 130, size=self.num)
         self.height = np.random.randint(60, 130, size=self.num)
@@ -232,6 +252,7 @@ class Triangle(Geometry):
 
     def draw_triangle(self, base_image, bottom_len, shift, height, color, center_width, center_height, angle):
         # Draw a rectangle
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         rotation_matrix = cv2.getRotationMatrix2D((center_width, center_height), angle, 1)
 
         rect_points = np.array([
@@ -243,7 +264,7 @@ class Triangle(Geometry):
         rotated_points = cv2.transform(np.array([rect_points]), rotation_matrix)[0]
 
         rotated_points = rotated_points.astype(int)
-        return cv2.fillPoly(base_image, [rotated_points], color)
+        return cv2.fillPoly(base_image, [rotated_points], color), cv2.fillPoly(mask_background, [rotated_points], color = (255, 255, 255) ) 
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -251,9 +272,9 @@ class Triangle(Geometry):
         center_height = random.randint(30, 210)
         angle = random.randint(0, 180)
         tag = [self.bottom_len[i], self.height[i], self.shift[i], center_width, center_height, angle]
-        drawn_image = self.draw_triangle(base_image, self.bottom_len[i], self.shift[i], self.height[i],
+        drawn_image, mask = self.draw_triangle(base_image, self.bottom_len[i], self.shift[i], self.height[i],
                                          tuple(self.color[i].tolist()), center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
 class Trapezoid(Geometry):
     def __init__(self, train):
@@ -261,13 +282,16 @@ class Trapezoid(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/05_trapezoid"
             self.background_folder = "imgs_background/test/05_trapezoid"
+            self.mask_folder = "imgs_mask/test/05_trapezoid"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/05_trapezoid"
             self.background_folder = "imgs_background/train/05_trapezoid"
+            self.mask_folder = "imgs_mask/train/05_trapezoid"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.bottom_length = []
         self.top_length = []
@@ -284,7 +308,7 @@ class Trapezoid(Geometry):
         self.name = 'trapezoid'
 
     def draw_trapezoid(self, base_image, bottom_len, top_len, shift, height, color, center_width, center_height, angle):
-        # Draw a rectangle
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         rotation_matrix = cv2.getRotationMatrix2D((center_width, center_height), angle, 1)
 
         shape_points = np.array([
@@ -296,7 +320,7 @@ class Trapezoid(Geometry):
         rotated_points = cv2.transform(np.array([shape_points]), rotation_matrix)[0]
         rotated_points = rotated_points.reshape((-1, 1, 2))
         rotated_points = rotated_points.astype(int)
-        return cv2.fillPoly(base_image, [rotated_points], color)
+        return cv2.fillPoly(base_image, [rotated_points], color), cv2.fillPoly(mask_background, [rotated_points], color = (255, 255, 255) ) 
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -304,9 +328,9 @@ class Trapezoid(Geometry):
         center_height = random.randint(30, 210)
         angle = random.randint(0, 180)
         tag = [self.bottom_length[i], self.height[i], self.top_length[i], center_width, center_height, angle]
-        drawn_image = self.draw_trapezoid(base_image, self.bottom_length[i], self.top_length[i], self.shift[i],
+        drawn_image, mask = self.draw_trapezoid(base_image, self.bottom_length[i], self.top_length[i], self.shift[i],
                                           self.height[i], tuple(self.color[i].tolist()), center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
 class Parallelogram(Geometry):
     def __init__(self, train):
@@ -314,13 +338,16 @@ class Parallelogram(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/06_parallelogram"
             self.background_folder = "imgs_background/test/06_parallelogram"
+            self.mask_folder = "imgs_mask/test/06_parallelogram"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/06_parallelogram"
             self.background_folder = "imgs_background/train/06_parallelogram"
+            self.mask_folder = "imgs_mask/train/06_parallelogram"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.length = np.random.randint(30, 80, size=self.num)
         self.height = np.random.randint(30, 80, size=self.num)
@@ -334,7 +361,7 @@ class Parallelogram(Geometry):
         self.name = 'parallelogram'
 
     def draw_parallelogram(self, base_image, length, shift, height, color, center_width, center_height, angle):
-        # Draw a rectangle
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         rotation_matrix = cv2.getRotationMatrix2D((center_width, center_height), angle, 1)
 
         shape_points = np.array([
@@ -346,7 +373,7 @@ class Parallelogram(Geometry):
         rotated_points = cv2.transform(np.array([shape_points]), rotation_matrix)[0]
         rotated_points = rotated_points.reshape((-1, 1, 2))
         rotated_points = rotated_points.astype(int)
-        return cv2.fillPoly(base_image, [rotated_points], color)
+        return cv2.fillPoly(base_image, [rotated_points], color), cv2.fillPoly(mask_background, [rotated_points], color = (255, 255, 255) ) 
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -354,9 +381,9 @@ class Parallelogram(Geometry):
         center_height = random.randint(30, 210)
         angle = random.randint(0, 180)
         tag = [self.length[i], self.height[i], self.shift[i], center_width, center_height, angle]
-        drawn_image = self.draw_parallelogram(base_image, self.length[i], self.shift[i], self.height[i],
+        drawn_image, mask = self.draw_parallelogram(base_image, self.length[i], self.shift[i], self.height[i],
                                               tuple(self.color[i].tolist()), center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
 class Pentagon(Geometry):
     def __init__(self, train):
@@ -364,20 +391,23 @@ class Pentagon(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/07_pentagon"
             self.background_folder = "imgs_background/test/07_pentagon"
+            self.mask_folder = "imgs_mask/test/07_pentagon"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/07_pentagon"
             self.background_folder = "imgs_background/train/07_pentagon"
+            self.mask_folder = "imgs_mask/train/07_pentagon"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
         self.name = 'pentagon'
 
     def draw_pentagon(self, base_image, radius, color, center_width, center_height, angle):
-        # Draw a rectangle
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         rotation_matrix = cv2.getRotationMatrix2D((center_width, center_height), angle, 1)
         shape_points = []
         for i in range(5):
@@ -388,7 +418,7 @@ class Pentagon(Geometry):
         rotated_points = cv2.transform(np.array([shape_points]), rotation_matrix)[0]
         rotated_points = rotated_points.reshape((-1, 1, 2))
         rotated_points = rotated_points.astype(int)
-        return cv2.fillPoly(base_image, [rotated_points], color)
+        return cv2.fillPoly(base_image, [rotated_points], color), cv2.fillPoly(mask_background, [rotated_points], color = (255, 255, 255) ) 
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -396,9 +426,9 @@ class Pentagon(Geometry):
         center_height = random.randint(30, 210)
         angle = random.randint(0, 180)
         tag = [self.radius[i], center_width, center_height, angle]
-        drawn_image = self.draw_pentagon(base_image, self.radius[i], tuple(self.color[i].tolist()),
+        drawn_image, mask = self.draw_pentagon(base_image, self.radius[i], tuple(self.color[i].tolist()),
                                          center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
 class Hexagon(Geometry):
     def __init__(self, train):
@@ -406,20 +436,23 @@ class Hexagon(Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/08_hexagon"
             self.background_folder = "imgs_background/test/08_hexagon"
+            self.mask_folder = "imgs_mask/test/08_hexagon"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/08_hexagon"
             self.background_folder = "imgs_background/train/08_hexagon"
+            self.mask_folder = "imgs_mask/train/08_hexagon"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
         self.name = 'hexagon'
 
     def draw_hexagon(self, base_image, radius, color, center_width, center_height, angle):
-        # Draw a rectangle
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         rotation_matrix = cv2.getRotationMatrix2D((center_width, center_height), angle, 1)
         shape_points = []
         for i in range(6):
@@ -430,7 +463,7 @@ class Hexagon(Geometry):
         rotated_points = cv2.transform(np.array([shape_points]), rotation_matrix)[0]
         rotated_points = rotated_points.reshape((-1, 1, 2))
         rotated_points = rotated_points.astype(int)
-        return cv2.fillPoly(base_image, [rotated_points], color)
+        return cv2.fillPoly(base_image, [rotated_points], color), cv2.fillPoly(mask_background, [rotated_points], color = (255, 255, 255) ) 
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -438,9 +471,9 @@ class Hexagon(Geometry):
         center_height = random.randint(30, 210)
         angle = random.randint(0, 180)
         tag = [self.radius[i], center_width, center_height, angle]
-        drawn_image = self.draw_hexagon(base_image, self.radius[i], tuple(self.color[i].tolist()),
+        drawn_image, mask = self.draw_hexagon(base_image, self.radius[i], tuple(self.color[i].tolist()),
                                         center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
 class Semicircle (Geometry):
     def __init__(self, train):
@@ -448,13 +481,16 @@ class Semicircle (Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/09_semicircle"
             self.background_folder = "imgs_background/test/09_semicircle"
+            self.mask_folder = "imgs_mask/test/09_semicircle"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/09_semicircle"
             self.background_folder = "imgs_background/train/09_semicircle"
+            self.mask_folder = "imgs_mask/train/09_semicircle"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius = np.random.randint(30, 80, size=self.num)
         self.color = np.random.randint(0, 256, size=(self.num, 3), dtype=np.uint8)
@@ -462,8 +498,11 @@ class Semicircle (Geometry):
 
     # draw the circle(since it makes no difference rotating the circle, we only need different center points)
     def draw_semicircle(self, base_image, radius, color, center_width, center_height, angle):
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         return cv2.ellipse(base_image, (center_width, center_height), (radius, radius),
-                           angle=angle, startAngle=0, endAngle=180, color=color, thickness=-1)
+                           angle=angle, startAngle=0, endAngle=180, color=color, thickness=-1),cv2.ellipse(mask_background, (center_width, center_height), (radius, radius),
+                           angle=angle, startAngle=0, endAngle=180, color=(255,255,255), thickness=-1)
+
 
 
     def draw_geometry(self, i):
@@ -472,9 +511,9 @@ class Semicircle (Geometry):
         center_height = random.randint(30, 210)
         angle = random.randint(0, 180)
         tag = [self.radius[i], center_width, center_height, angle]
-        drawn_image = self.draw_semicircle(base_image, self.radius[i], tuple(self.color[i].tolist()),
+        drawn_image, mask = self.draw_semicircle(base_image, self.radius[i], tuple(self.color[i].tolist()),
                                        center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 
 class Ellipse (Geometry):
     def __init__(self, train):
@@ -482,13 +521,16 @@ class Ellipse (Geometry):
         if train == False:
             self.output_folder = "imgs_main/test/10_ellipse"
             self.background_folder = "imgs_background/test/10_ellipse"
+            self.mask_folder = "imgs_mask/test/10_ellipse"
             self.num = 50
         else:
             self.output_folder = "imgs_main/train/10_ellipse"
             self.background_folder = "imgs_background/train/10_ellipse"
+            self.mask_folder = "imgs_mask/train/10_ellipse"
             self.num = 450
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
+        os.makedirs(self.mask_folder, exist_ok=True)
         # randomly generate the radii and colors for all images
         self.radius_x = []
         self.radius_y = []
@@ -504,8 +546,11 @@ class Ellipse (Geometry):
 
     # draw the circle(since it makes no difference rotating the circle, we only need different center points)
     def draw_ellipse(self, base_image, radius_x, radius_y, color, center_width, center_height, angle):
+        mask_background = np.zeros((self.pic_size, self.pic_size, 3), dtype=np.uint8)
         return cv2.ellipse(base_image, (center_width, center_height), (radius_x, radius_y),
-                           angle=angle, startAngle=0, endAngle=360, color=color, thickness=-1)
+                           angle=angle, startAngle=0, endAngle=360, color=color, thickness=-1),cv2.ellipse(mask_background, (center_width, center_height), (radius_x, radius_y),
+                           angle=angle, startAngle=0, endAngle=360, color=(255,255,255), thickness=-1)
+
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
@@ -513,9 +558,9 @@ class Ellipse (Geometry):
         center_height = random.randint(30, 210)
         angle = random.randint(0, 180)
         tag = [self.radius_x[i], self.radius_y[i], center_width, center_height, angle]
-        drawn_image = self.draw_ellipse(base_image, self.radius_x[i], self.radius_y[i], tuple(self.color[i].tolist()),
+        drawn_image, mask = self.draw_ellipse(base_image, self.radius_x[i], self.radius_y[i], tuple(self.color[i].tolist()),
                                        center_width, center_height, angle)
-        return drawn_image, tag
+        return drawn_image, mask, tag
 # create instances of each class
 rect = Rectangle(train=True)
 rect.save_images()
