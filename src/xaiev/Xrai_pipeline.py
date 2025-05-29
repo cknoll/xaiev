@@ -92,9 +92,11 @@ def generate_xrai_visualizations(
                 )
 
                 # Normalize the mask and resize
+                # !! F.interpolate(torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0), size=(512, 512), mode="bilinear")
+                # (512, 512) -> img.size
                 mask = normalize_image(
                     F.interpolate(
-                        torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0), size=(512, 512), mode="bilinear"
+                        torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0), img.size, mode="bilinear"
                     )
                     .squeeze()
                     .numpy()

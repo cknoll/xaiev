@@ -171,6 +171,7 @@ def generate_adversarial_examples(
 
                 # Load and process XAI mask
                 xai_mask = np.load(os.path.join(xai_dir, category, "mask", f"{imagename}.npy"))
+
                 adv_mask = normalize_image(
                     get_percentage_of_image(np.ones_like(current_img), xai_mask, pct / 10)
                 )

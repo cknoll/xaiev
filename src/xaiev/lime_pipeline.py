@@ -112,15 +112,20 @@ def generate_lime_visualizations(
                 save_moi.save(pjoin(output_path, category, "mask_on_image", image_name), "PNG")
 
                 # Normalize and save mask
+                # !! The mask is always resized to 512×512, 
+                # this can cause a mismatch when the input image is not of the same size
+                # F.interpolate(torch.Tensor(mask_raw).reshape(1, 1, 224, 224), (512, 512), mode="bilinear")
+                # (512, 512) -> img.size
                 mask = normalize_image(
-                    F.interpolate(torch.Tensor(mask_raw).reshape(1, 1, 224, 224), (512, 512), mode="bilinear")
+                    F.interpolate(torch.Tensor(mask_raw).reshape(1, 1, 224, 224), img.size, mode="bilinear")
                     .squeeze()
                     .squeeze()
                     .numpy()
                 )
                 # smooth heatmap
                 mask_tensor = torch.tensor(mask, dtype=torch.float32).unsqueeze(0).unsqueeze(0)
-                pooled_mask = avg_pooling(mask_tensor, kernel_size=129, stride=1)
+                # !! This pooling method also comes with padding, see its definetion for details
+                pooled_mask = avg_pooling(mask_tensor, kernel_size=129, stride=1) 
 
                 grad_mask = normalize_image(mask) + normalize_image(pooled_mask.squeeze().numpy()) / 100
                 np.save(pjoin(output_path, category, "mask", image_name), grad_mask)
