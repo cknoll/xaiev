@@ -1,6 +1,7 @@
 import csv
 import pathlib
-from typing import Any, Callable, Optional, Tuple
+from typing import Any, Callable, Optional, Tuple, Union
+from types import NoneType
 import numpy as np
 import PIL
 
@@ -32,13 +33,15 @@ class ATSDS(VisionDataset):
         split: str = "train",
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
+        expected_height: Union[int, NoneType] = None,
     ) -> None:
 
         super().__init__(root, transform=transform, target_transform=target_transform)
 
         self._split = split
         self._dataset_type = dataset_type  # no verify be careful.
-
+        self.expected_height = expected_height
+        
         if dataset_type is None:
             # this should be the new default
             self._base_folder = pathlib.Path(root)
@@ -75,10 +78,12 @@ class ATSDS(VisionDataset):
         return len(np.unique(np.array(self._samples)[:, 1]))
 
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
-
+       
         path, target = self._samples[index]
         sample = PIL.Image.open(path).convert("RGB")
-
+         
+        if self.expected_height is not None:
+            assert sample.size[0] == self.expected_height
         if self.transform is not None:
             sample = self.transform(sample)
 

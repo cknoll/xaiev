@@ -48,6 +48,13 @@ transform_test = transforms.Compose(
     ]
 )
 
+transform_generate_map = transforms.Compose(
+    [
+        transforms.Resize((256, 256)), 
+        transforms.CenterCrop(224),
+    ]
+)
+
 pjoin = os.path.join
 
 
@@ -91,8 +98,8 @@ def generate_gradcam_visualizations(
             with Image.open(pjoin(images_path, category, image_name)) as img:
                 image_tensor = transform_test(img).unsqueeze(0).to(device)
                 shape = img.size[::-1]  # PIL uses (width, height)
-
-                mask, _ = get_gradcam(model, target_layer, image_tensor, label_idx_dict[category], shape)
+                img = transform_generate_map(img)
+                mask, _ = get_gradcam(model, target_layer, image_tensor, label_idx_dict[category], output_shape = None)
                 save_xai_outputs(mask, np.array(img), category, image_name, output_path)
 
 

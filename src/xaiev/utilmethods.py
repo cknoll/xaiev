@@ -11,7 +11,14 @@ import cv2
 from dotenv import load_dotenv
 
 from . import utils
+from torchvision import transforms
 
+TRANSFORM_CREATE_IMG = transforms.Compose(
+    [
+        transforms.Resize(256),
+        transforms.CenterCrop((224, 224)),
+    ]
+)
 
 def mask_on_image(mask: np.ndarray, img: np.ndarray, alpha: float = 0.5) -> np.ndarray:
     """
@@ -162,13 +169,15 @@ def generate_adversarial_examples(
 
             for imagename in images[:limit]:
                 # Load original image and background
+                current_img_temp = TRANSFORM_CREATE_IMG(Image.open(os.path.join(img_path, category, imagename)))
+                current_background_temp = TRANSFORM_CREATE_IMG(Image.open(os.path.join(background_dir, category, imagename)))
                 current_img = normalize_image(
-                    np.array(Image.open(os.path.join(img_path, category, imagename)))
+                    np.array(current_img_temp)
                 )
                 current_background = normalize_image(
-                    np.array(Image.open(os.path.join(background_dir, category, imagename)))
+                    np.array(current_background_temp)
                 )
-
+                
                 # Load and process XAI mask
                 xai_mask = np.load(os.path.join(xai_dir, category, "mask", f"{imagename}.npy"))
 
