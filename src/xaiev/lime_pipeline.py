@@ -96,7 +96,8 @@ def generate_lime_visualizations(
 
                 # Use lambda to pass the required arguments to batch_predict
                 explanation = explainer.explain_instance(
-                    np.array(get_pil_transform()(img)),
+                    np.array(get_pil_transform()(img)), # !! Resized to 256 × 256 then cropped to 224 × 224
+                    # np.array(img),
                     classifier_fn=lambda imgs: batch_predict(imgs, model, preprocess_transform),
                     top_labels=20,
                     hide_color=0,

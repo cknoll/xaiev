@@ -40,6 +40,12 @@ TRANSFORM_TEST = transforms.Compose(
     ]
 )
 
+TRANSFORM_CREATE_IMG = transforms.Compose(
+    [
+        transforms.Resize(256),
+        transforms.CenterCrop((224, 224)),
+    ]
+)
 
 def generate_xrai_visualizations(
     model: torch.nn.Module,
@@ -94,9 +100,10 @@ def generate_xrai_visualizations(
                 # Normalize the mask and resize
                 # !! F.interpolate(torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0), size=(512, 512), mode="bilinear")
                 # (512, 512) -> img.size
+                # img.size -> current_image_tensor.shape[3]
                 mask = normalize_image(
                     F.interpolate(
-                        torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0), img.size, mode="bilinear"
+                        torch.Tensor(mask_raw).unsqueeze(0).unsqueeze(0), current_image_tensor.shape[3], mode="bilinear"
                     )
                     .squeeze()
                     .numpy()
@@ -110,7 +117,8 @@ def generate_xrai_visualizations(
                 np.save(pjoin(output_path, category, "mask", image_name), grad_mask)
 
                 # Overlay XRAI mask on the original image
-                overlay_image = mask_on_image_ig(normalize_image(mask), normalize_image(np.array(img)))
+                # normalize_image(np.array(img)) -> normalize_image(np.array(TRANSFORM_CREATE_IMG(img)))
+                overlay_image = mask_on_image_ig(normalize_image(mask), normalize_image(np.array(TRANSFORM_CREATE_IMG(img))))
                 overlay_output_path = pjoin(output_path, category, "mask_on_image", image_name)
                 Image.fromarray((overlay_image * 255).astype(np.uint8)).save(overlay_output_path, "PNG")
 
