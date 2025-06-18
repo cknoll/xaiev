@@ -96,6 +96,10 @@ def main():
         "--random_seed_train", type=int, default=1500, help="Random Seed for training"
     )
 
+    parser.add_argument(
+        "--comments", type=str, default="", help="Add your comments here"
+    )
+
     args = parser.parse_args()
 
     if args.bootstrap:
