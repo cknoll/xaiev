@@ -90,14 +90,14 @@ def generate_lime_visualizations(
         images = imagedict[category]
         for image_name in images:
             with Image.open(pjoin(images_path, category, image_name)) as img:
+                img = get_pil_transform()(img)
                 current_image_tensor = preprocess_transform(img)
                 current_image_tensor = current_image_tensor.to(device)
                 shape = (np.array(img).shape[0], np.array(img).shape[1])
 
                 # Use lambda to pass the required arguments to batch_predict
                 explanation = explainer.explain_instance(
-                    np.array(get_pil_transform()(img)), # !! Resized to 256 × 256 then cropped to 224 × 224
-                    # np.array(img),
+                    np.array(img),
                     classifier_fn=lambda imgs: batch_predict(imgs, model, preprocess_transform),
                     top_labels=20,
                     hide_color=0,
