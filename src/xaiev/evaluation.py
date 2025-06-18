@@ -8,6 +8,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 from ipydex import IPS
+from PIL import Image
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 CUDA_LAUNCH_BLOCKING = 1
@@ -67,8 +68,9 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
     # conf.EVAL_DATA_PATH is the directory which contains the percentage subdirs
     # (which contain the class-dirs which contain the images)
 
+    # TODO: check hard coded "10", the next two lines probably redundant
     data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
-    testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
+    testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test, expected_height=224)
 
     model = get_model(conf.MODEL, n_classes=testset.get_num_classes())
     model = model.to(device)
@@ -100,7 +102,23 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         # Iterate over percentages
         for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
-            testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test)
+
+            for subfolder in os.listdir(data_set_path):
+                subfolder_path = os.path.join(data_set_path, subfolder)
+                if os.path.isdir(subfolder_path):
+                    for filename in os.listdir(subfolder_path):
+                        if filename.lower().endswith(('.png')):
+                            image_path = os.path.join(subfolder_path, filename)
+                            with Image.open(image_path) as image:
+                                width, height = image.size
+                                if (width, height) == (224, 224):
+                                    transform_testset = None
+                                else:
+                                    transform_testset = transform_test
+                            break
+                    break 
+                
+            testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_testset, expected_height=224)
             testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
             c, c_5, t, loss, softmaxes, scores = test_model(model, testloader, loss_criterion, device)
             c_list.append(c)
