@@ -51,7 +51,12 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
         ]
     )
-
+    transform_test_no_crop = transforms.Compose(
+        [
+            transforms.ToTensor(),
+            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225]),
+        ]
+    )
     RANDOM_SEED = conf.RANDOM_SEED
 
     torch.manual_seed(RANDOM_SEED)
@@ -102,7 +107,7 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         # Iterate over percentages
         for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
-
+            
             for subfolder in os.listdir(data_set_path):
                 subfolder_path = os.path.join(data_set_path, subfolder)
                 if os.path.isdir(subfolder_path):
@@ -112,12 +117,11 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
                             with Image.open(image_path) as image:
                                 width, height = image.size
                                 if (width, height) == (224, 224):
-                                    transform_testset = None
+                                    transform_testset = transform_test_no_crop
                                 else:
                                     transform_testset = transform_test
                             break
                     break 
-                
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_testset, expected_height=224)
             testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
             c, c_5, t, loss, softmaxes, scores = test_model(model, testloader, loss_criterion, device)
