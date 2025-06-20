@@ -147,7 +147,7 @@ def main(model_full_name, conf: utils.CONF):
     device = setup_environment(random_seed)
 
     # Load dataset and dataloader
-    testset = ATSDS(root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=TRANSFORM_TEST)
+    testset = ATSDS(root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=TRANSFORM_TEST, expected_height=512)
 
     # Load model
     model = get_model(model_name, n_classes=testset.get_num_classes())

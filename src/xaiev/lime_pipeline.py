@@ -171,7 +171,7 @@ def main(model_full_name, conf: utils.CONF):
 
     # Load dataset and dataloader
     testset = ATSDS(
-        root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=get_preprocess_transform()
+        root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=get_preprocess_transform(), expected_height=512
     )
 
     # Load model

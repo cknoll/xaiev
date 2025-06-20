@@ -122,7 +122,7 @@ def main(model_full_name, conf: utils.CONF):
     # Setup environment
     device = setup_environment(random_seed)
 
-    testset = ATSDS(root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=transform_test)
+    testset = ATSDS(root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=transform_test, expected_height=512)
     model = get_model(model_name, n_classes=testset.get_num_classes())
     model = model.to(device)
     model.eval()

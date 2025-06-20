@@ -74,8 +74,8 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
     # (which contain the class-dirs which contain the images)
 
     # TODO: check hard coded "10", the next two lines probably redundant
-    data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
-    testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test, expected_height=224)
+    # data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
+    # testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test, expected_height=224)
 
     model = get_model(conf.MODEL, n_classes=testset.get_num_classes())
     model = model.to(device)
