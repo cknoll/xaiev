@@ -30,7 +30,7 @@ class ATSDS(VisionDataset):
         root: str,
         # TODO: remove hardcoded reference to atsds
         dataset_type="atsds_large",
-        split: str = "train",
+        split: str|None = "train",
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
         expected_height: Union[int, NoneType] = None,
@@ -48,9 +48,11 @@ class ATSDS(VisionDataset):
             if split is None:
                 self._target_folder = self._base_folder
             else:
-                self._base_folder / self._split
+                assert isinstance (self._split, str)
+                self._target_folder = self._base_folder / self._split
         else:
             self._base_folder = pathlib.Path(root) / dataset_type
+            assert isinstance (self._split, str)
             self._target_folder = self._base_folder / self._split
         print(self._target_folder)
 

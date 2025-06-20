@@ -107,7 +107,8 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         # Iterate over percentages
         for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
-            
+        
+        # TODO: add a comment here
             for subfolder in os.listdir(data_set_path):
                 subfolder_path = os.path.join(data_set_path, subfolder)
                 if os.path.isdir(subfolder_path):
@@ -124,6 +125,7 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
                     break 
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_testset, expected_height=224)
             testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
+            # TODO: save images from loader back to a directory for comparation, do the same for the testing part of training
             c, c_5, t, loss, softmaxes, scores = test_model(model, testloader, loss_criterion, device)
             c_list.append(c)
             c_5_list.append(c_5)
@@ -139,7 +141,7 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         pickle.dump(performance_xai_type, f)
 
 
-def visualize_evaluation(conf: utils.CONF, xai_methods: list[str] = None):
+def visualize_evaluation(conf: utils.CONF, xai_methods: list[str]|None = None):
 
     # Load the performance_xai_type dictionary from the pickle file
     dic_load_path = conf.EVAL_RESULT_DATA_PATH
