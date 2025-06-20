@@ -107,7 +107,7 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         # Iterate over percentages
         for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
-        
+
         # TODO: add a comment here
             for subfolder in os.listdir(data_set_path):
                 subfolder_path = os.path.join(data_set_path, subfolder)
@@ -122,10 +122,10 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
                                 else:
                                     transform_testset = transform_test
                             break
-                    break 
+                    break
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_testset, expected_height=224)
             testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
-            # TODO: save images from loader back to a directory for comparation, do the same for the testing part of training
+            # TODO-AIDER: save images from `testloader` back to a directory "debug_testloader".
             c, c_5, t, loss, softmaxes, scores = test_model(model, testloader, loss_criterion, device)
             c_list.append(c)
             c_5_list.append(c_5)
