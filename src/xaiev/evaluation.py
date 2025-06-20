@@ -125,7 +125,29 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
                     break
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_testset, expected_height=224)
             testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
-            # TODO-AIDER: save images from `testloader` back to a directory "debug_testloader".
+            
+            # Save images from testloader to debug directory
+            debug_dir = "debug_testloader"
+            os.makedirs(debug_dir, exist_ok=True)
+            
+            # Save a few sample images from the testloader
+            for i, (images, labels) in enumerate(testloader):
+                if i >= 10:  # Save only first 10 images to avoid too many files
+                    break
+                
+                # Denormalize the image for saving
+                image = images[0]  # Get first (and only) image from batch
+                # Reverse the normalization: x = (x * std) + mean
+                mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
+                std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
+                image = image * std + mean
+                image = torch.clamp(image, 0, 1)  # Ensure values are in [0, 1]
+                
+                # Convert to PIL Image and save
+                image_pil = transforms.ToPILImage()(image)
+                image_path = os.path.join(debug_dir, f"pct_{pct}_image_{i}_label_{labels[0].item()}.png")
+                image_pil.save(image_path)
+            
             c, c_5, t, loss, softmaxes, scores = test_model(model, testloader, loss_criterion, device)
             c_list.append(c)
             c_5_list.append(c_5)
