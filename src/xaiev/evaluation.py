@@ -164,7 +164,7 @@ def visualize_evaluation(conf: utils.CONF, xai_methods: list[str]|None = None):
     for i, entry in enumerate(accuracies):
         plt.plot(entry)
         plt.legend(xai_methods)
-        plt.annotate(f'{entry:.2f}',
+        plt.annotate(f'{entry.item():.2f}',
                  xy=(i, entry),
                  xytext=(0, 5),
                  textcoords='offset points',
