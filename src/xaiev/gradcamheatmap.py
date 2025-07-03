@@ -74,7 +74,7 @@ def generate_gradcam_visualizations(
     label_idx_dict: dict[str, int],
     output_path: str,
     images_path: str,
-    target_layer: torch.nn.Module,
+    target_layer: torch.Tensor | torch.nn.Module | torch.nn.modules.conv.Conv2d | torch.nn.modules.container.Sequential,
 ) -> None:
     """
     Generate Grad-CAM visualizations for each image in the dataset and save them.
@@ -96,7 +96,9 @@ def generate_gradcam_visualizations(
         for image_name in images:
             print(f"dbg: {image_name}")
             with Image.open(pjoin(images_path, category, image_name)) as img:
-                image_tensor = transform_test(img).unsqueeze(0).to(device)
+                image_transform = transform_test(img)
+                assert isinstance(image_transform, torch.Tensor)
+                image_tensor = image_transform.unsqueeze(0).to(device)
                 shape = img.size[::-1]  # PIL uses (width, height)
                 img = transform_generate_map(img)
                 mask, _ = get_gradcam(model, target_layer, image_tensor, label_idx_dict[category], output_shape = None)
@@ -124,40 +126,51 @@ def main(model_full_name, conf: utils.CONF):
 
     testset = ATSDS(root=BASE_DIR, split=dataset_split, dataset_type=dataset_type, transform=transform_test, expected_height=512)
     model = get_model(model_name, n_classes=testset.get_num_classes())
-    model = model.to(device)
-    model.eval()
-    loss_criterion = nn.CrossEntropyLoss()
+    if model is not None:
+        model = model.to(device)
+        model.eval()
+        loss_criterion = nn.CrossEntropyLoss()
+        loss_criterion = loss_criterion.to(device)
+        optimizer = optim.Adam(model.parameters())
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+        epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
+        print(f"Model checkpoint loaded. Epoch: {epoch}")
+        ##############
+        # print(model) # confirm gradcam layer if necessary
+        if model_name == "simple_cnn":
+            GRADCAM_TARGET_LAYER = model.conv3  # Simple CNN
+        elif model_name == "resnet50":
+            layer4 = model.layer4
+            assert isinstance(layer4, nn.Sequential)
+            GRADCAM_TARGET_LAYER = layer4[-1].conv3
+        elif model_name == "convnext_tiny":
+            features = model.features
+            assert isinstance(features, nn.Sequential)
+            last_block = features[-1][-1].block
+            assert isinstance(last_block, nn.Sequential)
+            GRADCAM_TARGET_LAYER = last_block[0]
+        elif model_name == "vgg16":
+            features = model.features
+            assert isinstance(features, nn.Sequential)
+            GRADCAM_TARGET_LAYER = features[-3]
+        elif model_name == "alexnet_simple":
+            GRADCAM_TARGET_LAYER = model.conv5
 
-    loss_criterion = loss_criterion.to(device)
-    optimizer = optim.Adam(model.parameters())
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+        if GRADCAM_TARGET_LAYER is not None:
+            print(f"{model_name} gradcam-target layer:", GRADCAM_TARGET_LAYER)
 
-    epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
-    print(f"Model checkpoint loaded. Epoch: {epoch}")
+            # Prepare categories and images
+            categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
 
-    ##############
+            # Ensure output directories exist
+            create_output_directories(output_path, categories)
 
-    # print(model) # confirm gradcam layer if necessary
-    if model_name == "simple_cnn":
-        GRADCAM_TARGET_LAYER = model.conv3  # Simple CNN
-    elif model_name == "resnet50":
-        GRADCAM_TARGET_LAYER = model.layer4[-1].conv3
-    elif model_name == "convnext_tiny":
-        GRADCAM_TARGET_LAYER = model.features[-1][-1].block[0]
-    elif model_name == "vgg16":
-        GRADCAM_TARGET_LAYER = model.features[-3]
-    elif model_name == "alexnet_simple":
-        GRADCAM_TARGET_LAYER = model.conv5
+            # Run Grad-CAM visualization
+            generate_gradcam_visualizations(
+                model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH, GRADCAM_TARGET_LAYER
+            )
+        else:
+            print("A gradcam target layer can't be found for this model.")
 
-    print(f"{model_name} gradcam-target layer:", GRADCAM_TARGET_LAYER)
-
-    # Prepare categories and images
-    categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
-
-    # Ensure output directories exist
-    create_output_directories(output_path, categories)
-
-    # Run Grad-CAM visualization
-    generate_gradcam_visualizations(
-        model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH, GRADCAM_TARGET_LAYER
-    )
+    else:
+        print("Model loading failed.")

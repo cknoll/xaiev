@@ -141,6 +141,7 @@ def main():
             # TODO: improve function name
             core.do_gradcam_pipeline(args.model, CONF)
         else:
+            msg = "The XAI method is invalid or not supported"
             raise NotImplementedError(msg)
 
     elif args.command == "create-eval-images":
@@ -157,6 +158,7 @@ def main():
             # TODO: improve function name
             core.train_model(args, CONF)
         else:
+            msg = "The model type is invalid or not supported"
             raise NotImplementedError(msg)
     elif args.command == "visualize":
         core.do_visualization(CONF)

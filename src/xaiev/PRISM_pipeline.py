@@ -1,6 +1,7 @@
 ## Standard libraries
 import argparse
 import os
+from pickle import NONE
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -75,18 +76,23 @@ def generate_prism_visualizations(
         images = imagedict[category]
         for image_name in images:
             with Image.open(pjoin(images_path, category, image_name)) as img:
-                current_image_tensor = TRANSFORM_TEST(img).unsqueeze(0).to(device)
+                current_image_transform = TRANSFORM_TEST(img)
+                assert isinstance(current_image_transform, torch.Tensor)
+                current_image_tensor = current_image_transform.unsqueeze(0).to(device)
 
                 # Forward pass to generate PRISM maps
                 model(current_image_tensor)
 
                 # Retrieve PRISM maps
                 prism_maps = PRISM.get_maps()
-                drawable_prism_maps = prism_maps.permute(0, 2, 3, 1).detach().cpu().numpy().squeeze()
+                if prism_maps is not None:
+                    drawable_prism_maps = prism_maps.permute(0, 2, 3, 1).detach().cpu().numpy().squeeze()
 
-                # Save PRISM maps overlayed on original image
-                save_moi = Image.fromarray((drawable_prism_maps * 255).astype(np.uint8))
-                save_moi.save(pjoin(output_path, category, "mask_on_image", image_name), "PNG")
+                    # Save PRISM maps overlayed on original image
+                    save_moi = Image.fromarray((drawable_prism_maps * 255).astype(np.uint8))
+                    save_moi.save(pjoin(output_path, category, "mask_on_image", image_name), "PNG")
+                else:
+                    raise ValueError("Prism_maps is none.")
 
                 # Normalize and save PRISM mask
                 mask_raw = np.array(save_moi)
@@ -151,22 +157,25 @@ def main(model_full_name, conf: utils.CONF):
 
     # Load model
     model = get_model(model_name, n_classes=testset.get_num_classes())
-    model = model.to(device)
-    model.eval()
-    optimizer = optim.Adam(model.parameters())
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    if model is not None:
+        model = model.to(device)
+        model.eval()
+        optimizer = optim.Adam(model.parameters())
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
-    # Load checkpoint
-    epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
-    print(f"Model checkpoint loaded. Epoch: {epoch}")
+        # Load checkpoint
+        epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
+        print(f"Model checkpoint loaded. Epoch: {epoch}")
 
-    # Prepare categories and images
-    categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
+        # Prepare categories and images
+        categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
 
-    # Ensure output directories exist
-    create_output_directories(output_path, categories)
+        # Ensure output directories exist
+        create_output_directories(output_path, categories)
 
-    # Generate PRISM visualizations
-    generate_prism_visualizations(
-        model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH
-    )
+        # Generate PRISM visualizations
+        generate_prism_visualizations(
+            model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH
+        )
+    else:
+        raise ValueError("Model loading failed.")

@@ -2,11 +2,11 @@ import os
 from PIL import Image
 from torchvision import transforms as transforms
 
-folder_A = './geometry_512/imgs_main/test'
-folder_B = './geometry_512/XAI_results/alexnet_simple/gradcam/test'
-folder_C = './geometry_512/XAI_results/alexnet_simple/lime/test'
-folder_D = './geometry_512/XAI_results/alexnet_simple/xrai/test'
-output_folder = './geometry_512/compare'
+folder_A = './atsds_large/imgs_main/test'
+folder_B = './atsds_large/XAI_results/alexnet_simple/gradcam/test'
+folder_C = './atsds_large/XAI_results/alexnet_simple/lime/test'
+folder_D = './atsds_large/XAI_results/alexnet_simple/xrai/test'
+output_folder = './atsds_large/compare'
 gap = 20
 
 transform = transforms.Compose(
@@ -24,8 +24,10 @@ def combine_images(img_path_A, img_path_B, img_path_C, img_path_D):
     img_A = Image.open(img_path_A)
     img_A = transform(img_A)
     img_B = Image.open(img_path_B)
+    img_B = transform(img_B)
     img_C = Image.open(img_path_C)
     img_D = Image.open(img_path_D)
+    img_D = transform(img_D)
 
     width_A, height_A = img_A.size
     width_B, height_B = img_B.size

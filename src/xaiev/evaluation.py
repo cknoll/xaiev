@@ -30,11 +30,11 @@ from . import utils
 
 # TODO: unify common parts of both functions
 def eval_revelation(conf: utils.CONF):
-    _evaluation(conf, range(0, 101, 10))
+    _evaluation(conf, list(range(0, 101, 10)))
 
 
 def eval_occlusion(conf: utils.CONF):
-    _evaluation(conf, range(0, 101, 10))
+    _evaluation(conf, list(range(0, 101, 10)))
 
 
 def _evaluation(conf: utils.CONF, percentage_range: list[int]):
@@ -73,15 +73,18 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
     # conf.EVAL_DATA_PATH is the directory which contains the percentage subdirs
     # (which contain the class-dirs which contain the images)
 
-    # TODO: check hard coded "10", the next two lines probably redundant
-    # data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
-    # testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test, expected_height=224)
+
+    data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
+    testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test, expected_height=224)
 
     model = get_model(conf.MODEL, n_classes=testset.get_num_classes())
-    model = model.to(device)
-    loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters())
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+    if model is not None:
+        model = model.to(device)
+        loss_criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(model.parameters())
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+    else:
+        print("Model loading failed.")
 
     # load the model weights
     epoch, trainstats = load_model(model, optimizer, scheduler, conf.MODEL_PATH, device)
@@ -108,7 +111,8 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
         
-        # TODO: add a comment here
+        # Check a picture from the evaluation folder to see if it's 224 × 224, if true do not
+        # apply cropping again, if false apply cropping      
             for subfolder in os.listdir(data_set_path):
                 subfolder_path = os.path.join(data_set_path, subfolder)
                 if os.path.isdir(subfolder_path):
@@ -160,4 +164,10 @@ def visualize_evaluation(conf: utils.CONF, xai_methods: list[str]|None = None):
     for i, entry in enumerate(accuracies):
         plt.plot(entry)
         plt.legend(xai_methods)
+        plt.annotate(f'{entry:.2f}',
+                 xy=(i, entry),              
+                 xytext=(0, 5),              
+                 textcoords='offset points', 
+                 ha='center',                
+                 fontsize=9)
         plt.savefig(dic_load_path.replace(".pcl", ".png"))

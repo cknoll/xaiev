@@ -3,7 +3,7 @@ import pathlib
 from typing import Any, Callable, Optional, Tuple, Union
 from types import NoneType
 import numpy as np
-import PIL
+from PIL import Image
 
 from torchvision.datasets.folder import make_dataset
 from torchvision.datasets.utils import download_and_extract_archive, verify_str_arg
@@ -29,7 +29,7 @@ class ATSDS(VisionDataset):
         self,
         root: str,
         # TODO: remove hardcoded reference to atsds
-        dataset_type="atsds_large",
+        dataset_type: str|None ="atsds_large",
         split: str|None = "train",
         transform: Optional[Callable] = None,
         target_transform: Optional[Callable] = None,
@@ -73,7 +73,7 @@ class ATSDS(VisionDataset):
     def __len__(self) -> int:
         return len(self._samples)
 
-    def get_classes(self) -> int:
+    def get_classes(self) -> list[int]:
         return sorted(np.unique(np.array(self._samples)[:, 1]))
 
     def get_num_classes(self) -> int:
@@ -82,7 +82,7 @@ class ATSDS(VisionDataset):
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
        
         path, target = self._samples[index]
-        sample = PIL.Image.open(path).convert("RGB")
+        sample = Image.open(path).convert("RGB")
          
         if self.expected_height is not None:
             assert sample.size[0] == self.expected_height

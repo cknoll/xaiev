@@ -45,7 +45,9 @@ def get_model(model_name, n_classes):
 
         model = base_model
         layer_dc_1 = DWConfBlock(512)
-        model.features[26] = layer_dc_1
+        features = model.features
+        assert isinstance(features, nn.Sequential)
+        features[26] = layer_dc_1
         # model.features[7] = layer_dc_2
         model.classifier[-1] = classifier_layer
         return model

@@ -56,7 +56,9 @@ def compute_ig_masks(model, device, categories, imagedict, label_idx_dict, outpu
             image_path = os.path.join(images_path, category, image_name)
             with open(image_path, "rb") as f:
                 with Image.open(f) as current_image:
-                    current_image_tensor = TRANSFORM_TEST(current_image).unsqueeze(0).to(device)
+                    current_image_transform = TRANSFORM_TEST(current_image)
+                    assert isinstance (current_image_transform, torch.Tensor)
+                    current_image_tensor = current_image_transform.unsqueeze(0).to(device)
                     current_image_tensor.requires_grad = True
 
                     # Set baseline as a tensor of zeros
@@ -136,10 +138,13 @@ def main(model_full_name, conf: utils.CONF):
 
     # Load model
     model = get_model(model_name, n_classes=testset.get_num_classes())
-    model = model.to(device)
-    model.eval()
-    optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=2e-04)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 5000)
+    if model is not None:
+        model = model.to(device)
+        model.eval()
+        optimizer = optim.SGD(model.parameters(), lr=0.1, momentum=0.9, weight_decay=2e-04)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 5000)
+    else:
+        raise ValueError("Model loading failed.")
 
     # Load checkpoint
     epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
