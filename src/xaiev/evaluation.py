@@ -30,11 +30,11 @@ from . import utils
 
 # TODO: unify common parts of both functions
 def eval_revelation(conf: utils.CONF):
-    _evaluation(conf, range(0, 101, 10))
+    _evaluation(conf, list(range(0, 101, 10)))
 
 
 def eval_occlusion(conf: utils.CONF):
-    _evaluation(conf, range(0, 101, 10))
+    _evaluation(conf, list(range(0, 101, 10)))
 
 
 def _evaluation(conf: utils.CONF, percentage_range: list[int]):
@@ -73,15 +73,18 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
     # conf.EVAL_DATA_PATH is the directory which contains the percentage subdirs
     # (which contain the class-dirs which contain the images)
 
-    # TODO: check hard coded "10", the next two lines probably redundant
-    # data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
-    # testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test, expected_height=224)
+
+    data_set_path = os.path.join(conf.EVAL_DATA_PATH, "10")
+    testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_test, expected_height=224)
 
     model = get_model(conf.MODEL, n_classes=testset.get_num_classes())
-    model = model.to(device)
-    loss_criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters())
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+    if model is not None:
+        model = model.to(device)
+        loss_criterion = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(model.parameters())
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, 200)
+    else:
+        print("Model loading failed.")
 
     # load the model weights
     epoch, trainstats = load_model(model, optimizer, scheduler, conf.MODEL_PATH, device)
@@ -108,7 +111,8 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
         for pct in percentage_range:
             data_set_path = os.path.join(conf.EVAL_DATA_PATH, str(pct))
 
-        # TODO: add a comment here
+        # Check a picture from the evaluation folder to see if it's 224 × 224, if true do not
+        # apply cropping again, if false apply cropping
             for subfolder in os.listdir(data_set_path):
                 subfolder_path = os.path.join(data_set_path, subfolder)
                 if os.path.isdir(subfolder_path):
@@ -125,32 +129,7 @@ def _evaluation(conf: utils.CONF, percentage_range: list[int]):
                     break
             testset = ATSDS(root=data_set_path, split=None, dataset_type=None, transform=transform_testset, expected_height=224)
             testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
-
-            # Save images from testloader to debug directory
-            debug_dir = "debug_testloader"
-            os.makedirs(debug_dir, exist_ok=True)
-
-            # Save a few sample images from the testloader
-            for i, (images, labels) in enumerate(testloader):
-                if i >= 10:  # Save only first 10 images to avoid too many files
-                    break
-
-                # Denormalize the image for saving
-
-                if 0:
-                    # this was added by aider but we do want to save the preprocessed images for debugging -> omit it
-                    image = images[0]  # Get first (and only) image from batch
-                    # Reverse the normalization: x = (x * std) + mean
-                    mean = torch.tensor([0.485, 0.456, 0.406]).view(3, 1, 1)
-                    std = torch.tensor([0.229, 0.224, 0.225]).view(3, 1, 1)
-                    image = image * std + mean
-                    image = torch.clamp(image, 0, 1)  # Ensure values are in [0, 1]
-
-                # Convert to PIL Image and save
-                image_pil = transforms.ToPILImage()(image)
-                image_path = os.path.join(debug_dir, f"pct_{pct}_image_{i}_label_{labels[0].item()}.png")
-                image_pil.save(image_path)
-
+            # TODO: save images from loader back to a directory for comparation, do the same for the testing part of training
             c, c_5, t, loss, softmaxes, scores = test_model(model, testloader, loss_criterion, device)
             c_list.append(c)
             c_5_list.append(c_5)
@@ -185,4 +164,10 @@ def visualize_evaluation(conf: utils.CONF, xai_methods: list[str]|None = None):
     for i, entry in enumerate(accuracies):
         plt.plot(entry)
         plt.legend(xai_methods)
+        plt.annotate(f'{entry:.2f}',
+                 xy=(i, entry),
+                 xytext=(0, 5),
+                 textcoords='offset points',
+                 ha='center',
+                 fontsize=9)
         plt.savefig(dic_load_path.replace(".pcl", ".png"))

@@ -168,93 +168,96 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
     testloader = torch.utils.data.DataLoader(testset, batch_size=1, shuffle=True, num_workers=2)
 
     model = get_model(model_name=model_name, n_classes=trainset.get_num_classes())
-    model = model.to(device)
-    loss_criterion = nn.CrossEntropyLoss().to(device)
-    optimizer = optim.AdamW(model.parameters(), lr=initial_learning_rate, weight_decay=weight_decay)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, max_epochs)
-    #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
-    # Initialize variables for tracking
-    epoch = 0
-    # train_loss = 0.0 #might not be correct here
-    correct_train_s, correct_top5_train_s, total_train_s = [], [], []
-    correct_test_s, correct_top5_test_s, total_test_s = [], [], []
-    train_losses, test_losses = [], []
+    if model is not None:
+        model = model.to(device)
+        loss_criterion = nn.CrossEntropyLoss().to(device)
+        optimizer = optim.AdamW(model.parameters(), lr=initial_learning_rate, weight_decay=weight_decay)
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, max_epochs)
+        #scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=30, gamma=0.1)
+        # Initialize variables for tracking
+        epoch = 0
+        # train_loss = 0.0 #might not be correct here
+        correct_train_s, correct_top5_train_s, total_train_s = [], [], []
+        correct_test_s, correct_top5_test_s, total_test_s = [], [], []
+        train_losses, test_losses = [], []
 
-    start_time = time.time()
-    start_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    # Start training loop
-    while epoch < max_epochs:
-        # Training step
-        model.train()
-        correct = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
-        correct_top5 = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
-        total = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
-        train_loss = 0.0
-        # Use tqdm to show progress for training
-        with tqdm(trainloader, desc=f"Epoch {epoch+1}/{max_epochs} Training", unit="batch") as pbar:
-            for i, (inputs, labels) in enumerate(pbar):
-                inputs, labels = inputs.to(device), labels.to(device)
-                optimizer.zero_grad()
-                outputs = model(inputs)
-                loss = loss_criterion(outputs, labels)
-                loss.backward()
-                optimizer.step()
+        start_time = time.time()
+        start_time_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Start training loop
+        while epoch < max_epochs:
+            # Training step
+            model.train()
+            correct = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
+            correct_top5 = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
+            total = torch.zeros(trainset.get_num_classes(), dtype=torch.int64, device=device)
+            train_loss = 0.0
+            # Use tqdm to show progress for training
+            with tqdm(trainloader, desc=f"Epoch {epoch+1}/{max_epochs} Training", unit="batch") as pbar:
+                for i, (inputs, labels) in enumerate(pbar):
+                    inputs, labels = inputs.to(device), labels.to(device)
+                    optimizer.zero_grad()
+                    outputs = model(inputs)
+                    loss = loss_criterion(outputs, labels)
+                    loss.backward()
+                    optimizer.step()
 
-                train_loss += loss.item()
-                _, predicted = torch.max(outputs, 1)
-                _, predicted_top5 = torch.topk(outputs, 5, 1)
+                    train_loss += loss.item()
+                    _, predicted = torch.max(outputs, 1)
+                    _, predicted_top5 = torch.topk(outputs, 5, 1)
 
-                for i in range(len(predicted)):
-                    correct[labels[i]] += (predicted[i] == labels[i])
-                    correct_top5[labels[i]] += (labels[i] in predicted_top5[i])
-                    total[labels[i]] += 1
+                    for i in range(len(predicted)):
+                        correct[labels[i]] += (predicted[i] == labels[i])
+                        correct_top5[labels[i]] += (labels[i] in predicted_top5[i])
+                        total[labels[i]] += 1
 
-                # Update progress bar
-                pbar.set_postfix(train_loss=train_loss / (i + 1))
+                    # Update progress bar
+                    pbar.set_postfix(train_loss=train_loss / (i + 1))
 
-        accuracy_per_class = (correct.float() / total.float())
-        top5_accuracy_per_class = (correct_top5.float() / total.float())
-        train_losses.append(train_loss / len(trainloader))
-        print(f"Epoch {epoch+1} Train Loss: {train_losses[-1]:.4f}")
-        print(f"Train Accuracy: {accuracy_per_class.mean():.2%} | Train Top-5 Accuracy: {top5_accuracy_per_class.mean():.2%}")
+            accuracy_per_class = (correct.float() / total.float())
+            top5_accuracy_per_class = (correct_top5.float() / total.float())
+            train_losses.append(train_loss / len(trainloader))
+            print(f"Epoch {epoch+1} Train Loss: {train_losses[-1]:.4f}")
+            print(f"Train Accuracy: {accuracy_per_class.mean():.2%} | Train Top-5 Accuracy: {top5_accuracy_per_class.mean():.2%}")
 
-        correct_train_s.append(accuracy_per_class)
-        correct_top5_train_s.append(top5_accuracy_per_class)
-        total_train_s.append(total)
+            correct_train_s.append(accuracy_per_class)
+            correct_top5_train_s.append(top5_accuracy_per_class)
+            total_train_s.append(total)
 
-        # Testing step
-        accuracy_per_class, top5_accuracy_per_class, test_loss = calculate_accuracy_and_loss(
-            model, testset.get_num_classes(), testloader, loss_criterion, device)
-        test_losses.append(test_loss)
-        print(f"Test Loss: {test_loss:.4f}")
-        print(f"Test Accuracy: {accuracy_per_class.mean():.2%} | Test Top-5 Accuracy: {top5_accuracy_per_class.mean():.2%}")
+            # Testing step
+            accuracy_per_class, top5_accuracy_per_class, test_loss = calculate_accuracy_and_loss(
+                model, testset.get_num_classes(), testloader, loss_criterion, device)
+            test_losses.append(test_loss)
+            print(f"Test Loss: {test_loss:.4f}")
+            print(f"Test Accuracy: {accuracy_per_class.mean():.2%} | Test Top-5 Accuracy: {top5_accuracy_per_class.mean():.2%}")
 
-        correct_test_s.append(accuracy_per_class)
-        correct_top5_test_s.append(top5_accuracy_per_class)
-        total_test_s.append(total)
+            correct_test_s.append(accuracy_per_class)
+            correct_top5_test_s.append(top5_accuracy_per_class)
+            total_test_s.append(total)
 
-        # # Save model
-        # save_model(model, optimizer, scheduler,
-        #            [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
-        #             [correct_test_s, correct_top5_test_s, total_test_s]],
-        #            epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
+            # # Save model
+            # save_model(model, optimizer, scheduler,
+            #            [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
+            #             [correct_test_s, correct_top5_test_s, total_test_s]],
+            #            epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
 
-        # Update learning rate
-        scheduler.step()
-        epoch += 1
-    
-    end_time = time.time()
-    duration = end_time - start_time
-    mins, secs = divmod(duration, 60)
-    train_time = str(mins)+"mins "+str(secs)+"secs"
-    dataset_name = os.path.basename(BASE_DIR)
-    # Save model
-    save_model(model, optimizer, scheduler,
-                [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
-                [correct_test_s, correct_top5_test_s, total_test_s], start_time_str, train_time, random_seed, dataset_name, comments],
-                epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
+            # Update learning rate
+            scheduler.step()
+            epoch += 1
+        
+        end_time = time.time()
+        duration = end_time - start_time
+        mins, secs = divmod(duration, 60)
+        train_time = str(mins)+"mins "+str(secs)+"secs"
+        dataset_name = os.path.basename(BASE_DIR)
+        # Save model
+        save_model(model, optimizer, scheduler,
+                    [train_losses, test_losses, [correct_train_s, correct_top5_train_s, total_train_s],
+                    [correct_test_s, correct_top5_test_s, total_test_s], start_time_str, train_time, random_seed, dataset_name, comments],
+                    epoch, pjoin(CHECKPOINT_PATH, f"{model_name}_{model_number}_{epoch}.tar"))
 
-    print("Training Complete!")
+        print("Training Complete!")
+    else:
+        raise ValueError("Model loading failed.")
     
 def main(args, conf: utils.CONF):
 

@@ -175,11 +175,15 @@ def main(model_full_name, conf: utils.CONF):
     )
 
     # Load model
+    
     model = get_model(model_name, n_classes=testset.get_num_classes())
-    model = model.to(device)
-    model.eval()
-    optimizer = optim.Adam(model.parameters())
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    if model is not None:
+        model = model.to(device)
+        model.eval()
+        optimizer = optim.Adam(model.parameters())
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    else:
+        raise ValueError("Model loading failed.")
 
     # Load checkpoint
     epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)

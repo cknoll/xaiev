@@ -84,7 +84,9 @@ def generate_xrai_visualizations(
 
             # Open and process the image
             with Image.open(pjoin(images_path, category, image_name)) as img:
-                current_image_tensor = TRANSFORM_TEST(img).unsqueeze(0).to(device)
+                current_image_transform = TRANSFORM_TEST(img)
+                assert isinstance (current_image_transform, torch.Tensor)
+                current_image_tensor = current_image_transform.unsqueeze(0).to(device)
 
                 # Convert current_image_tensor to (H, W, C)
                 current_image_np = np.moveaxis(current_image_tensor.squeeze(0).cpu().numpy(), 0, -1)
@@ -187,22 +189,25 @@ def main(model_full_name, conf: utils.CONF):
 
     # Load model
     model = get_model(model_name, n_classes=testset.get_num_classes())
-    model = model.to(device)
-    model.eval()
-    optimizer = torch.optim.Adam(model.parameters())
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
+    if model is not None:
+        model = model.to(device)
+        model.eval()
+        optimizer = torch.optim.Adam(model.parameters())
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=200)
 
-    # Load checkpoint
-    epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
-    print(f"Model checkpoint loaded. Epoch: {epoch}")
+        # Load checkpoint
+        epoch, trainstats = load_model(model, optimizer, scheduler, pjoin(CHECKPOINT_PATH, model_cpt), device)
+        print(f"Model checkpoint loaded. Epoch: {epoch}")
 
-    # Prepare categories and images
-    categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
+        # Prepare categories and images
+        categories, label_idx_dict, imagedict = prepare_categories_and_images(IMAGES_PATH)
 
-    # Ensure output directories exist
-    create_output_directories(output_path, categories)
+        # Ensure output directories exist
+        create_output_directories(output_path, categories)
 
-    # Generate XRAI visualizations
-    generate_xrai_visualizations(
-        model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH
-    )
+        # Generate XRAI visualizations
+        generate_xrai_visualizations(
+            model, device, categories, imagedict, label_idx_dict, output_path, IMAGES_PATH
+        )
+    else:
+        raise ValueError("Model loading failed.")

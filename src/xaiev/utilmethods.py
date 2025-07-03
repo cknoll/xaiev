@@ -40,7 +40,7 @@ def mask_on_image(mask: np.ndarray, img: np.ndarray, alpha: float = 0.5) -> np.n
 
 def get_rgb_heatmap(mask: np.ndarray) -> np.ndarray:
     """Convert mask to RGB heatmap."""
-    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET) #type:ignore
     heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)
     heatmap = np.float32(heatmap) / 255
     return np.copy(heatmap)
@@ -292,7 +292,7 @@ def load_checkpoint(
     filepath: str,
     model: torch.nn.Module,
     optimizer: torch.optim.Optimizer,
-    scheduler: torch.optim.lr_scheduler,
+    scheduler: torch.optim.lr_scheduler._LRScheduler,
     device: torch.device,
 ) -> tuple[int, dict]:
     """

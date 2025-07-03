@@ -37,8 +37,11 @@ def read_conf_from_dotenv() -> CONF:
 
     # on the CI system it seems to be necessary to explicitly specify the path of the .env file
     load_dotenv("./.env")
-
-    CONF.XAIEV_BASE_DIR = os.getenv("XAIEV_BASE_DIR")
+    
+    xaiev_base_dir = os.getenv("XAIEV_BASE_DIR")
+    assert xaiev_base_dir is not None, "XAIEV_BASE_DIR not set"
+    CONF.XAIEV_BASE_DIR = xaiev_base_dir
+    
 
     assert CONF.XAIEV_BASE_DIR is not None
     return CONF

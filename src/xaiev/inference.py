@@ -4,6 +4,7 @@ import glob
 import json
 import random
 
+from numpy import isin
 import tqdm
 from PIL import Image
 import torch
@@ -99,23 +100,31 @@ class InferenceManager:
         model_name = "_".join(self.model_full_name.split("_")[:-2])  # Extract model_name
 
         # load model architecture
-        self.model = get_model(model_name=model_name, n_classes=len(self.class_names)).to(self.device)
-
-        checkpoint = torch.load(
-            model_fpath, map_location=self.device, weights_only=False
-        )  # Load to CPU or GPU
-        self.epoch = checkpoint["epoch"]
-        self.trainstats = checkpoint["trainstats"]
-        self.model.load_state_dict(checkpoint["model"])
-        self.model.eval()  # Set model to evaluation mode
-        print(f"Loaded model: {model_name} | Epoch: {self.epoch}")
+        if self.class_names is not None:
+            model = get_model(model_name=model_name, n_classes=len(self.class_names))
+            if model is not None:
+                self.model = model.to(self.device)
+                checkpoint = torch.load(
+                    model_fpath, map_location=self.device, weights_only=False
+                )  # Load to CPU or GPU
+                self.epoch = checkpoint["epoch"]
+                self.trainstats = checkpoint["trainstats"]
+                self.model.load_state_dict(checkpoint["model"])
+                self.model.eval()  # Set model to evaluation mode
+                print(f"Loaded model: {model_name} | Epoch: {self.epoch}")
+            else:
+                raise ValueError("Model loading failed.")
+        else:
+            raise ValueError("Attribute class_names not defined for class Inference Manager")
 
     def predict_image(self, model, image_path, class_names, full_res=False):
         """
         Function to predict class for an image
         """
         image = Image.open(image_path).convert("RGB")
-        image_tensor = self.transform_inference(image).unsqueeze(0).to(self.device)  # Add batch dimension
+        image_transform = self.transform_inference(image)
+        assert isinstance (image_transform, torch.Tensor)
+        image_tensor = image_transform.unsqueeze(0).to(self.device)  # Add batch dimension
         with torch.no_grad():
             outputs = model(image_tensor)
             _, predicted = torch.max(outputs, 1)
@@ -139,7 +148,8 @@ class InferenceManager:
     def get_image_paths_of_dataset_part(self, part: str = "test"):
 
         class_dirs = glob.glob(pjoin(self.dataset_base_path, part, "*"))
-        assert len(class_dirs) == len(self.class_names)
+        if self.class_names is not None:
+            assert len(class_dirs) == len(self.class_names)
 
         all_paths = []
 
@@ -163,15 +173,17 @@ class InferenceManager:
         os.makedirs(self.output_dir_path, exist_ok=True)
 
         # Create class folders
-        for class_name in self.class_names:
-            class_folder = os.path.join(self.output_dir_path, class_name)
-            os.makedirs(class_folder, exist_ok=True)
+        if self.class_names is not None:
+            for class_name in self.class_names:
+                class_folder = os.path.join(self.output_dir_path, class_name)
+                os.makedirs(class_folder, exist_ok=True)
 
         # Process each image in the list
         for file_path in input_paths:
             if file_path.endswith((".jpg", ".jpeg", ".png")):
                 filename = os.path.split(file_path)[1]
                 predicted_class = self.predict_image(self.model, file_path, self.class_names)
+                assert isinstance (predicted_class, str)
                 dest_folder = os.path.join(self.output_dir_path, predicted_class)
                 shutil.copy(file_path, os.path.join(dest_folder, filename))
                 print(f"Copied {filename} to {dest_folder}")
@@ -191,9 +203,9 @@ class InferenceManager:
 
         # TODO: detect HPC in a different way
         if not "horse" in self.inference_data_base_path:
-            input_paths = tqdm.tqdm(input_paths)
+            input_image_paths = tqdm.tqdm(input_paths)
 
-        for image_path in input_paths:
+        for image_path in input_image_paths:
             res = self.predict_image(self.model, image_path, self.class_names, full_res=True)
 
             # example: image_path = "/home/username/xaiev/data/atsds_large/imgs_main/test/00002/000096.png'"
