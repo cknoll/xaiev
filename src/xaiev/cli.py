@@ -101,7 +101,7 @@ def main():
     )
 
     parser.add_argument(
-        "background", type = str, default="", help="Set the color of the background above the occluded part"
+        "--patch", type = str, default="", help="Set the color of the patch above the occluded part"
     )
 
     args = parser.parse_args()
