@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class CONF:
+class CONF_CLASS:
     XAIEV_BASE_DIR: str
     DATA_SET_PATH: str
     DATASET_NAME: str
@@ -28,9 +28,12 @@ class CONF:
     EVAL_DATA_PATH: str
     EVAL_RESULT_DATA_PATH: str
     EVAL_METHOD: str
+    COMMENTS: str
+    PATCH: str
 
+CONF = CONF_CLASS
 
-def read_conf_from_dotenv() -> CONF:
+def read_conf_from_dotenv(): #-> CONF_CLASS
     if not os.path.isfile(".env"):
         msg = "Could not find configuration file (.env). Please see section 'Bootstrapping' in README.md."
         raise FileNotFoundError(msg)
@@ -42,12 +45,11 @@ def read_conf_from_dotenv() -> CONF:
     assert xaiev_base_dir is not None, "XAIEV_BASE_DIR not set"
     CONF.XAIEV_BASE_DIR = xaiev_base_dir
     
-
     assert CONF.XAIEV_BASE_DIR is not None
-    return CONF
+    return CONF 
 
 
-def create_config(args) -> CONF:
+def create_config(args): # -> type[CONF]
     read_conf_from_dotenv()  # manipulate global variable CONF
     CONF.DATA_SET_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_main")
 
@@ -66,6 +68,8 @@ def create_config(args) -> CONF:
     CONF.MODEL_PATH = os.path.join(CONF.MODEL_CP_PATH, f"{CONF.MODEL}.tar")
     CONF.XAI_METHOD = args.xai_method
     CONF.EVAL_METHOD = args.eval_method
+    CONF.COMMENTS = args.comments
+    CONF.PATCH = args.patch
 
     if CONF.MODEL and CONF.XAI_METHOD:
         CONF.EVAL_DATA_BASE_PATH = os.path.join(

@@ -164,10 +164,11 @@ def visualize_evaluation(conf: utils.CONF, xai_methods: list[str]|None = None):
     for i, entry in enumerate(accuracies):
         plt.plot(entry)
         plt.legend(xai_methods)
-        plt.annotate(f'{entry.item():.2f}',
-                 xy=(i, entry),
-                 xytext=(0, 5),
-                 textcoords='offset points',
-                 ha='center',
-                 fontsize=9)
+        for datapoints in entry:
+            plt.annotate(f'{datapoints:.2f}',
+                    xy=(i, datapoints),
+                    xytext=(0, 5),
+                    textcoords='offset points',
+                    ha='center',
+                    fontsize=9)
         plt.savefig(dic_load_path.replace(".pcl", ".png"))

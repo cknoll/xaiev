@@ -100,6 +100,10 @@ def main():
         "--comments", type=str, default="", help="Add your comments here"
     )
 
+    parser.add_argument(
+        "background", type = str, default="", help="Set the color of the background above the occluded part"
+    )
+
     args = parser.parse_args()
 
     if args.bootstrap:
