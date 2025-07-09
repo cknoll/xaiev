@@ -172,20 +172,16 @@ def generate_adversarial_examples(
             for imagename in images[:limit]:
                 # Load original image and background
                 current_img_temp = TRANSFORM_CREATE_IMG(Image.open(os.path.join(img_path, category, imagename)))
-                current_img = normalize_image(
-                    np.array(current_img_temp)
-                )
+                current_img = np.array(current_img_temp)
                 # Load and process XAI mask
                 xai_mask = np.load(os.path.join(xai_dir, category, "mask", f"{imagename}.npy"))
 
-                adv_mask = normalize_image(
-                    get_percentage_of_image(np.ones_like(current_img), xai_mask, pct / 10)
-                )
+                adv_mask = get_percentage_of_image(np.ones_like(current_img), xai_mask, pct / 10)
+                
                 if patch_color == "":
                     current_background_temp = TRANSFORM_CREATE_IMG(Image.open(os.path.join(background_dir, category, imagename)))
-                    current_background = normalize_image(
-                        np.array(current_background_temp)
-                    )
+                    current_background = np.array(current_background_temp)
+                    
                 elif patch_color == "black":
                     current_background = np.zeros_like(current_img)
                 elif patch_color == "average":
@@ -196,7 +192,7 @@ def generate_adversarial_examples(
 
                 # Create adversarial example using the mask condition
                 adv_example = np.where(mask_condition(adv_mask), current_img, current_background)
-                adv_example_save = Image.fromarray((adv_example * 255).astype("uint8"))
+                adv_example_save = Image.fromarray(adv_example.astype("uint8"))
 
                 # Save adversarial example
                 adv_example_save.save(os.path.join(output_dir, imagename))
