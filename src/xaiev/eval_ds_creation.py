@@ -23,8 +23,11 @@ def create_eval_dataset(conf: utils.CONF, eval_method: str, mask_condition, pct_
 
     model_name = "_".join(conf.MODEL.split("_")[:-2])
     # Paths for dataset and associated outputs
-    BACKGROUND_DIR = get_dir_path(conf.DATASET_BACKGROUND_DIR, conf.DATASET_SPLIT)
-
+    if conf.PATCH == "":
+        BACKGROUND_DIR = get_dir_path(conf.DATASET_BACKGROUND_DIR, conf.DATASET_SPLIT)
+    else:
+        BACKGROUND_DIR = ""
+        
     # TODO: improve naming (including/excluding train/test-split)
     DATASET_DIR = get_dir_path(conf.DATA_SET_PATH, conf.DATASET_SPLIT)
     XAI_DIR = get_dir_path(
@@ -34,6 +37,7 @@ def create_eval_dataset(conf: utils.CONF, eval_method: str, mask_condition, pct_
 
     CATEGORIES, image_dict = create_image_dict(conf.XAIEV_BASE_DIR, conf.DATASET_NAME, conf.DATASET_SPLIT)
     print(CATEGORIES)
+
 
     generate_adversarial_examples(
         adv_folder=ADV_FOLDER,
@@ -45,4 +49,5 @@ def create_eval_dataset(conf: utils.CONF, eval_method: str, mask_condition, pct_
         xai_dir=XAI_DIR,
         mask_condition=mask_condition,
         limit=conf.LIMIT,
+        patch_color = conf.PATCH
     )
