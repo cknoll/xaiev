@@ -101,9 +101,12 @@ def main():
     )
 
     parser.add_argument(
+        "--brake", action='store_true', help="When set, training stops when accuracy>90%"
+    )
+    parser.add_argument(
         "--patch", type = str, default="", help="Set the color of the patch above the occluded part"
     )
-
+    
     args = parser.parse_args()
 
     if args.bootstrap:

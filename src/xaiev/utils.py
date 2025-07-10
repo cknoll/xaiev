@@ -30,6 +30,8 @@ class CONF_CLASS:
     EVAL_METHOD: str
     COMMENTS: str
     PATCH: str
+    BRAKE: bool
+
 
 CONF = CONF_CLASS
 
@@ -55,7 +57,11 @@ def create_config(args): # -> type[CONF]
 
     # the following names are now hardcoded (according to directory structure specified in README)
     CONF.DATASET_NAME = "imgs_main"
-    CONF.DATASET_BACKGROUND_DIR = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_background")
+    CONF.PATCH = args.patch
+    if CONF.PATCH == "":
+        CONF.DATASET_BACKGROUND_DIR = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_background")
+    else:
+        CONF.DATASET_BACKGROUND_DIR = ""
     CONF.DATASET_MASK = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_mask")
 
     CONF.MODEL_CP_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "model_checkpoints")
@@ -69,7 +75,7 @@ def create_config(args): # -> type[CONF]
     CONF.XAI_METHOD = args.xai_method
     CONF.EVAL_METHOD = args.eval_method
     CONF.COMMENTS = args.comments
-    CONF.PATCH = args.patch
+    CONF.BRAKE = args.brake
 
     if CONF.MODEL and CONF.XAI_METHOD:
         CONF.EVAL_DATA_BASE_PATH = os.path.join(

@@ -160,7 +160,7 @@ def calculate_accuracy_and_loss(model, num_classes, dataloader, criterion, devic
     return accuracy_per_class, top5_accuracy_per_class, avg_loss
 
 
-def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_type, initial_learning_rate, batch_size, weight_decay, max_epochs, random_seed, comments):
+def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_type, initial_learning_rate, batch_size, weight_decay, max_epochs, random_seed, comments, brake):
     # Load dataset and create dataloaders
     trainset = ATSDS(root=BASE_DIR, dataset_type= dataset_type, split="train", transform=transform_train, expected_height=512)
     testset = ATSDS(root=BASE_DIR, dataset_type= dataset_type, split="test", transform=transform_test, expected_height=512)
@@ -243,6 +243,11 @@ def start_training(BASE_DIR, CHECKPOINT_PATH, model_name, model_number, dataset_
             # Update learning rate
             scheduler.step()
             epoch += 1
+            if brake:
+                if accuracy_per_class.mean() > 0.9:
+                    print("Training stopped early: test accuracy > 90%, epoch:", epoch)
+                    break
+
         
         end_time = time.time()
         duration = end_time - start_time
@@ -269,5 +274,5 @@ def main(args, conf: utils.CONF):
     random.seed(args.random_seed_train)
     np.random.seed(args.random_seed_train) 
 
-    start_training(BASE_DIR, CHECKPOINT_PATH, args.architecture, args.model_number, dataset_type, args.learning_rate, args.batch_size, args.weight_decay, args.max_epochs, args.random_seed_train, args.comments)
+    start_training(BASE_DIR, CHECKPOINT_PATH, args.architecture, args.model_number, dataset_type, args.learning_rate, args.batch_size, args.weight_decay, args.max_epochs, args.random_seed_train, args.comments, args.brake)
 
