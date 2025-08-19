@@ -107,6 +107,10 @@ def main():
         "--patch", type = str, default="", help="Set the color of the patch above the occluded part"
     )
     
+    parser.add_argument(
+        "--base-dir", type=str, help="Override the base directory (defaults to XAIEV_BASE_DIR from .env)"
+    )
+    
     args = parser.parse_args()
 
     if args.bootstrap:

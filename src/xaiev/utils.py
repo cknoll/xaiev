@@ -55,6 +55,11 @@ def read_conf_from_dotenv(): #-> CONF_CLASS
 
 def create_config(args): # -> type[CONF]
     read_conf_from_dotenv()  # manipulate global variable CONF
+    
+    # Override base directory if provided via command line
+    if hasattr(args, 'base_dir') and args.base_dir is not None:
+        CONF.XAIEV_BASE_DIR = args.base_dir
+    
     CONF.DATA_SET_PATH = os.path.join(CONF.XAIEV_BASE_DIR, "imgs_main")
 
     # the following names are now hardcoded (according to directory structure specified in README)
