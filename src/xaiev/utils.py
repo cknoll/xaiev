@@ -7,6 +7,8 @@ from colorama import Style, Fore
 
 from dataclasses import dataclass
 
+from regex import P
+
 
 @dataclass
 class CONF_CLASS:
@@ -76,13 +78,17 @@ def create_config(args): # -> type[CONF]
     CONF.EVAL_METHOD = args.eval_method
     CONF.COMMENTS = args.comments
     CONF.BRAKE = args.brake
-
+    if CONF.PATCH == "":
+        patch_type = "default"
+    else:
+        patch_type = CONF.PATCH
     if CONF.MODEL and CONF.XAI_METHOD:
         CONF.EVAL_DATA_BASE_PATH = os.path.join(
             CONF.XAIEV_BASE_DIR,
             "XAI_evaluation",
             CONF.MODEL,
             CONF.XAI_METHOD,
+            patch_type,
             CONF.DATASET_SPLIT,
         )
         CONF.EVAL_DATA_PATH = os.path.join(CONF.EVAL_DATA_BASE_PATH, CONF.EVAL_METHOD)
