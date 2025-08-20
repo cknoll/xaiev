@@ -109,34 +109,43 @@ def create_3x3_grid(images, output_path, spacing=30):
     grid_image = Image.new('RGB', (grid_width, grid_height), 'white')
     draw = ImageDraw.Draw(grid_image)
     
-    # Try to load a font, with better fallback handling
-    font_size = 40
-    font = None
-    
-    try:
-        # Try to load PIL's improved default font
+
+    def get_font_path():
+    # 常见字体路径
+        candidates = [
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Linux
+            "/usr/share/fonts/truetype/freefont/FreeSans.ttf",       # Linux备用
+            "/Library/Fonts/Arial.ttf",                              # macOS
+            "C:/Windows/Fonts/arial.ttf"                             # Windows
+        ]
+        for path in candidates:
+            if os.path.exists(path):
+                return path
+        return None
+
+    # Try to load a large TrueType font, fallback to default if not found
+    font_size = 200  # 先用200测试效果
+    font_path = get_font_path()
+
+    if font_path:
+        font = ImageFont.truetype(font_path, font_size)
+        print(f"Using font: {font_path} size {font_size}")
+    else:
         font = ImageFont.load_default()
-        print(f"Using PIL default font")
-    except:
-        font = None
-        print("Could not load default font, using basic text rendering")
+        print("No system font found, using PIL default (small)")
     
     def draw_large_text(draw, text, x, y, color='black', font=None):
         """Draw text with better visibility"""
         if font:
-            # Use the loaded font
             draw.text((x, y), text, fill=color, font=font)
         else:
-            # Create larger text by scaling up the drawing
-            # Draw text multiple times with offsets to simulate larger, bolder text
-            scale_factor = 3  # Make text appear 3x larger
-            offsets = []
-            for dx in range(-scale_factor, scale_factor + 1):
-                for dy in range(-scale_factor, scale_factor + 1):
-                    offsets.append((dx, dy))
-            
+            # As fallback: simulate large text by scaling
+            scale_factor = 10
+            offsets = [(dx, dy) for dx in range(-scale_factor, scale_factor+1)
+                    for dy in range(-scale_factor, scale_factor+1)]
             for dx, dy in offsets:
                 draw.text((x + dx, y + dy), text, fill=color)
+
     
     # Add column headers
     for col, subfolder in enumerate(subfolder_order):
