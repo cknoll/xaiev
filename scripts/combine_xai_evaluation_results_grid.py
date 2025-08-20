@@ -109,61 +109,32 @@ def create_3x3_grid(images, output_path, spacing=30):
     grid_image = Image.new('RGB', (grid_width, grid_height), 'white')
     draw = ImageDraw.Draw(grid_image)
     
-    # Try to use a default font, fallback to basic font if not available
-    font = None
+    # Use PIL's default font but make text larger by drawing it multiple times
     font_size = 20
+    print(f"Using PIL default rendering for text at effective size {font_size}")
     
-    # List of font paths to try
-    font_paths = [
-        "arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/System/Library/Fonts/Arial.ttf",
-        "/System/Library/Fonts/Helvetica.ttc",
-        "/usr/share/fonts/TTF/DejaVuSans.ttf",
-        "/usr/share/fonts/liberation/LiberationSans-Regular.ttf"
-    ]
-    
-    for font_path in font_paths:
-        try:
-            font = ImageFont.truetype(font_path, font_size)
-            print(f"Successfully loaded font: {font_path} at size {font_size}")
-            break
-        except Exception as e:
-            print(f"Failed to load font {font_path}: {e}")
-            continue
-    
-    if font is None:
-        print("Warning: Could not load any TrueType fonts, text may be very small")
-        try:
-            font = ImageFont.load_default()
-        except:
-            font = None
+    # We'll create larger text by drawing it multiple times with slight offsets
+    def draw_large_text(draw, text, x, y, color='black'):
+        """Draw text larger by rendering it multiple times with offsets"""
+        # Draw the text multiple times with slight offsets to make it bolder/larger
+        offsets = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)]
+        for dx, dy in offsets:
+            draw.text((x + dx, y + dy), text, fill=color)
     
     # Add column headers
     for col, subfolder in enumerate(subfolder_order):
         x = spacing + col * (max_width + spacing) + max_width // 2
         y = header_height // 2
         
-        if font:
-            # Get text bounding box for centering
-            try:
-                bbox = draw.textbbox((0, 0), subfolder, font=font)
-                text_width = bbox[2] - bbox[0]
-                text_height = bbox[3] - bbox[1]
-                x -= text_width // 2
-                y -= text_height // 2
-                draw.text((x, y), subfolder, fill='black', font=font)
-                print(f"Drew text '{subfolder}' at position ({x}, {y}) with font size {font_size}")
-            except Exception as e:
-                print(f"Error drawing text with font: {e}")
-                # Fallback to basic text
-                draw.text((x - len(subfolder) * 3, y), subfolder, fill='black')
-        else:
-            # Fallback without font - make text larger by repeating characters
-            text = subfolder.upper()
-            draw.text((x - len(text) * 4, y), text, fill='black')
-            print(f"Drew text '{text}' without font at position ({x - len(text) * 4}, {y})")
+        # Center the text approximately (each character is about 6 pixels wide)
+        text = subfolder.upper()
+        text_width = len(text) * 6
+        x_centered = x - text_width // 2
+        y_centered = y - 6  # Approximate text height centering
+        
+        # Draw large text using our custom function
+        draw_large_text(draw, text, x_centered, y_centered, 'black')
+        print(f"Drew large text '{text}' at position ({x_centered}, {y_centered})")
     
     # Place images in grid
     for row, xai_method in enumerate(xai_methods):
