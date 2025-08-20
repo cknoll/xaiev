@@ -63,7 +63,7 @@ def extract_result_images(base_path, method):
         subfolders = get_available_folders(xai_path)
         
         for subfolder in subfolders:
-            result_path = os.path.join(xai_path, subfolder, 'test', method, 'result.png')
+            result_path = os.path.join(xai_path, subfolder, 'test', method, 'results.png')
             
             if os.path.exists(result_path):
                 try:
@@ -138,8 +138,8 @@ def create_3x3_grid(images, output_path, spacing=30):
 
 def main():
     parser = argparse.ArgumentParser(description='Combine XAI evaluation results into a 3x3 grid')
-    parser.add_argument('data_folder', help='Folder name under data/ to process')
-    parser.add_argument('method', choices=['occlusion', 'revelation'], 
+    parser.add_argument('--data-folder', help='Folder name under data/ to process')
+    parser.add_argument('--method', choices=['occlusion', 'revelation'], 
                        help='Evaluation method to use (occlusion or revelation)')
     parser.add_argument('--output', '-o', default='xai_evaluation_grid.png',
                        help='Output filename for the combined grid (default: xai_evaluation_grid.png)')
@@ -147,7 +147,7 @@ def main():
     args = parser.parse_args()
     
     # Step 1: Check if data folder exists
-    data_base_path = 'data'
+    data_base_path = '/data/horse/ws/luch715g-XAI_workspace/data'
     if not os.path.exists(data_base_path):
         print(f"Error: data/ folder not found in current directory")
         return 1
