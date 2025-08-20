@@ -99,7 +99,7 @@ def create_3x3_grid(images, output_path, spacing=30):
         return False
     
     # Calculate header height for column labels
-    header_height = 120
+    header_height = 50
     
     # Calculate grid dimensions
     grid_width = 3 * max_width + 4 * spacing  # 3 images + 4 spacing areas (left, 2 middle, right)
@@ -111,16 +111,19 @@ def create_3x3_grid(images, output_path, spacing=30):
     
     # Try to use a default font, fallback to basic font if not available
     try:
-        font = ImageFont.truetype("arial.ttf", 180)
+        font = ImageFont.truetype("arial.ttf", 20)
     except:
         try:
             # Try other common font paths
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 180)
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
         except:
             try:
-                font = ImageFont.load_default()
+                font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", 20)
             except:
-                font = None
+                try:
+                    font = ImageFont.load_default()
+                except:
+                    font = None
     
     # Add column headers
     for col, subfolder in enumerate(subfolder_order):
