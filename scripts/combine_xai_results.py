@@ -150,6 +150,7 @@ def create_combined_image(images, output_path, spacing=30):
 def main():
     parser = argparse.ArgumentParser(description='Combine XAI evaluation results')
     parser.add_argument('data_folder', help='Folder under /data to process')
+    parser.add_argument('xai_folder', help='Folder under /data/{data_folder}/XAI_evaluation to process')
     parser.add_argument('method', choices=['revelation', 'occlusion'], 
                        help='Evaluation method to use')
     parser.add_argument('--output', '-o', default='combined_xai_results.png',
@@ -165,26 +166,16 @@ def main():
         print(f"Error: Data folder {data_path} does not exist")
         sys.exit(1)
     
-    # Get available XAI evaluation folders
-    xai_folders = get_available_xai_folders(args.data_folder)
-    if not xai_folders:
-        print("No XAI evaluation folders found")
-        sys.exit(1)
-    
-    # Interactive selection of XAI folder
-    selected_xai_folder = select_folder_interactive(
-        xai_folders, 
-        "Select XAI evaluation folder:"
-    )
-    
-    if not selected_xai_folder:
-        print("No folder selected")
+    # Verify XAI evaluation folder exists
+    xai_path = f"/data/{args.data_folder}/XAI_evaluation/{args.xai_folder}"
+    if not os.path.exists(xai_path):
+        print(f"Error: XAI evaluation folder {xai_path} does not exist")
         sys.exit(1)
     
     # Build the base path for finding images
-    base_path = f"/data/{args.data_folder}/XAI_evaluation/{selected_xai_folder}"
+    base_path = xai_path
     
-    print(f"\nSearching for result.png files in: {base_path}")
+    print(f"Searching for result.png files in: {base_path}")
     print(f"Using method: {args.method}")
     
     # Find all result images
