@@ -110,20 +110,35 @@ def create_3x3_grid(images, output_path, spacing=30):
     draw = ImageDraw.Draw(grid_image)
     
     # Try to use a default font, fallback to basic font if not available
-    try:
-        font = ImageFont.truetype("arial.ttf", 20)
-    except:
+    font = None
+    font_size = 20
+    
+    # List of font paths to try
+    font_paths = [
+        "arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/System/Library/Fonts/Arial.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/liberation/LiberationSans-Regular.ttf"
+    ]
+    
+    for font_path in font_paths:
         try:
-            # Try other common font paths
-            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 20)
+            font = ImageFont.truetype(font_path, font_size)
+            print(f"Successfully loaded font: {font_path} at size {font_size}")
+            break
+        except Exception as e:
+            print(f"Failed to load font {font_path}: {e}")
+            continue
+    
+    if font is None:
+        print("Warning: Could not load any TrueType fonts, text may be very small")
+        try:
+            font = ImageFont.load_default()
         except:
-            try:
-                font = ImageFont.truetype("/System/Library/Fonts/Arial.ttf", 20)
-            except:
-                try:
-                    font = ImageFont.load_default()
-                except:
-                    font = None
+            font = None
     
     # Add column headers
     for col, subfolder in enumerate(subfolder_order):
@@ -132,15 +147,23 @@ def create_3x3_grid(images, output_path, spacing=30):
         
         if font:
             # Get text bounding box for centering
-            bbox = draw.textbbox((0, 0), subfolder, font=font)
-            text_width = bbox[2] - bbox[0]
-            text_height = bbox[3] - bbox[1]
-            x -= text_width // 2
-            y -= text_height // 2
-            draw.text((x, y), subfolder, fill='black', font=font)
+            try:
+                bbox = draw.textbbox((0, 0), subfolder, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                x -= text_width // 2
+                y -= text_height // 2
+                draw.text((x, y), subfolder, fill='black', font=font)
+                print(f"Drew text '{subfolder}' at position ({x}, {y}) with font size {font_size}")
+            except Exception as e:
+                print(f"Error drawing text with font: {e}")
+                # Fallback to basic text
+                draw.text((x - len(subfolder) * 3, y), subfolder, fill='black')
         else:
-            # Fallback without font
-            draw.text((x - len(subfolder) * 3, y), subfolder, fill='black')
+            # Fallback without font - make text larger by repeating characters
+            text = subfolder.upper()
+            draw.text((x - len(text) * 4, y), text, fill='black')
+            print(f"Drew text '{text}' without font at position ({x - len(text) * 4}, {y})")
     
     # Place images in grid
     for row, xai_method in enumerate(xai_methods):
