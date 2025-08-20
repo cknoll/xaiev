@@ -99,7 +99,7 @@ def create_3x3_grid(images, output_path, spacing=30):
         return False
     
     # Calculate header height for column labels
-    header_height = 50
+    header_height = 80
     
     # Calculate grid dimensions
     grid_width = 3 * max_width + 4 * spacing  # 3 images + 4 spacing areas (left, 2 middle, right)
@@ -109,31 +109,61 @@ def create_3x3_grid(images, output_path, spacing=30):
     grid_image = Image.new('RGB', (grid_width, grid_height), 'white')
     draw = ImageDraw.Draw(grid_image)
     
-    # Use PIL's default font but make text larger by drawing it multiple times
-    font_size = 20
-    print(f"Using PIL default rendering for text at effective size {font_size}")
+    # Try to load a font, with better fallback handling
+    font_size = 40
+    font = None
     
-    # We'll create larger text by drawing it multiple times with slight offsets
-    def draw_large_text(draw, text, x, y, color='black'):
-        """Draw text larger by rendering it multiple times with offsets"""
-        # Draw the text multiple times with slight offsets to make it bolder/larger
-        offsets = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 0), (0, 1), (1, -1), (1, 0), (1, 1)]
-        for dx, dy in offsets:
-            draw.text((x + dx, y + dy), text, fill=color)
+    try:
+        # Try to load PIL's improved default font
+        font = ImageFont.load_default()
+        print(f"Using PIL default font")
+    except:
+        font = None
+        print("Could not load default font, using basic text rendering")
+    
+    def draw_large_text(draw, text, x, y, color='black', font=None):
+        """Draw text with better visibility"""
+        if font:
+            # Use the loaded font
+            draw.text((x, y), text, fill=color, font=font)
+        else:
+            # Create larger text by scaling up the drawing
+            # Draw text multiple times with offsets to simulate larger, bolder text
+            scale_factor = 3  # Make text appear 3x larger
+            offsets = []
+            for dx in range(-scale_factor, scale_factor + 1):
+                for dy in range(-scale_factor, scale_factor + 1):
+                    offsets.append((dx, dy))
+            
+            for dx, dy in offsets:
+                draw.text((x + dx, y + dy), text, fill=color)
     
     # Add column headers
     for col, subfolder in enumerate(subfolder_order):
         x = spacing + col * (max_width + spacing) + max_width // 2
         y = header_height // 2
         
-        # Center the text approximately (each character is about 6 pixels wide)
         text = subfolder.upper()
-        text_width = len(text) * 6
-        x_centered = x - text_width // 2
-        y_centered = y - 6  # Approximate text height centering
+        
+        if font:
+            # Get text dimensions for proper centering
+            try:
+                bbox = draw.textbbox((0, 0), text, font=font)
+                text_width = bbox[2] - bbox[0]
+                text_height = bbox[3] - bbox[1]
+                x_centered = x - text_width // 2
+                y_centered = y - text_height // 2
+            except:
+                # Fallback centering
+                x_centered = x - len(text) * 12  # Approximate centering for size 40
+                y_centered = y - 20
+        else:
+            # Approximate centering for scaled text
+            x_centered = x - len(text) * 18  # Larger approximation for scaled text
+            y_centered = y - 15
         
         # Draw large text using our custom function
-        draw_large_text(draw, text, x_centered, y_centered, 'black')
+        draw_large_text(draw, text, x_centered, y_centered, 'black', font)
         print(f"Drew large text '{text}' at position ({x_centered}, {y_centered})")
     
     # Place images in grid
