@@ -155,22 +155,30 @@ def create_combined_image(images, output_path, spacing=30):
 
 def main():
     parser = argparse.ArgumentParser(description="Combine XAI evaluation result images")
-    parser.add_argument("--data-folder", help="Folder under /data to use")
+    parser.add_argument("--data-folder", help="Folder under data directory to use")
     parser.add_argument("--xai-evaluation-folder", help="Folder under /XAI_evaluation to use")
     parser.add_argument("--method", choices=["revelation", "occlusion"], help="Evaluation method")
     parser.add_argument("--output", help="Output file path", default="combined_xai_results.png")
+    parser.add_argument("--data-base-path", help="Base path for data folders", default="data")
     
     args = parser.parse_args()
     
-    # Step 1: Select folder under /data
-    data_base_path = "/data"
+    # Step 1: Select folder under data directory
+    data_base_path = args.data_base_path
     if args.data_folder:
         data_folder = args.data_folder
         if not os.path.exists(os.path.join(data_base_path, data_folder)):
             print(f"Error: Folder {data_folder} does not exist in {data_base_path}")
+            print(f"Available folders in {data_base_path}:")
+            available = get_available_folders(data_base_path)
+            if available:
+                for folder in available:
+                    print(f"  - {folder}")
+            else:
+                print(f"  No folders found in {data_base_path}")
             return 1
     else:
-        data_folder = select_folder_interactive(data_base_path, "Select a folder under /data:")
+        data_folder = select_folder_interactive(data_base_path, f"Select a folder under {data_base_path}:")
         if not data_folder:
             print("No folder selected. Exiting.")
             return 1
