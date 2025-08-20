@@ -194,27 +194,32 @@ def main():
         print("No folder selected. Exiting.")
         sys.exit(1)
     
-    # Step 2: Select folder from /XAI_evaluation
+    # Step 2: Check if selected folder is XAI_evaluation or contains it
     data_folder_path = os.path.join(data_path, selected_data_folder)
-    xai_evaluation_base = os.path.join(data_folder_path, "XAI_evaluation")
     
-    if not os.path.exists(xai_evaluation_base):
-        print(f"Error: XAI_evaluation folder not found at {xai_evaluation_base}")
-        sys.exit(1)
+    # If user selected XAI_evaluation folder directly, use it as base
+    if selected_data_folder == "XAI_evaluation":
+        xai_evaluation_base = data_folder_path
+    else:
+        # Otherwise, look for XAI_evaluation subfolder
+        xai_evaluation_base = os.path.join(data_folder_path, "XAI_evaluation")
+        if not os.path.exists(xai_evaluation_base):
+            print(f"Error: XAI_evaluation folder not found at {xai_evaluation_base}")
+            sys.exit(1)
     
     selected_xai_folder = select_folder_interactive(
         xai_evaluation_base,
-        f"Available folders under {xai_evaluation_base}:"
+        f"Available model folders under {xai_evaluation_base}:"
     )
     
     if not selected_xai_folder:
-        print("No XAI evaluation folder selected. Exiting.")
+        print("No model folder selected. Exiting.")
         sys.exit(1)
     
     # Step 3: Select method (revelation/occlusion)
     method = select_method_interactive()
     
-    # Construct full path to selected XAI evaluation folder
+    # Construct full path to selected model folder
     xai_evaluation_path = os.path.join(xai_evaluation_base, selected_xai_folder)
     
     print(f"\nProcessing XAI evaluation results from: {xai_evaluation_path}")
