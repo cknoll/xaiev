@@ -12,7 +12,7 @@ This script:
 import os
 import argparse
 from pathlib import Path
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 import sys
 
 
@@ -98,12 +98,42 @@ def create_3x3_grid(images, output_path, spacing=30):
         print("Error: No valid images found to create grid")
         return False
     
+    # Calculate header height for column labels
+    header_height = 40
+    
     # Calculate grid dimensions
     grid_width = 3 * max_width + 4 * spacing  # 3 images + 4 spacing areas (left, 2 middle, right)
-    grid_height = 3 * max_height + 4 * spacing  # 3 rows + 4 spacing areas (top, 2 middle, bottom)
+    grid_height = 3 * max_height + 4 * spacing + header_height  # 3 rows + 4 spacing areas + header
     
     # Create white background
     grid_image = Image.new('RGB', (grid_width, grid_height), 'white')
+    draw = ImageDraw.Draw(grid_image)
+    
+    # Try to use a default font, fallback to basic font if not available
+    try:
+        font = ImageFont.truetype("arial.ttf", 20)
+    except:
+        try:
+            font = ImageFont.load_default()
+        except:
+            font = None
+    
+    # Add column headers
+    for col, subfolder in enumerate(subfolder_order):
+        x = spacing + col * (max_width + spacing) + max_width // 2
+        y = header_height // 2
+        
+        if font:
+            # Get text bounding box for centering
+            bbox = draw.textbbox((0, 0), subfolder, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+            x -= text_width // 2
+            y -= text_height // 2
+            draw.text((x, y), subfolder, fill='black', font=font)
+        else:
+            # Fallback without font
+            draw.text((x - len(subfolder) * 3, y), subfolder, fill='black')
     
     # Place images in grid
     for row, xai_method in enumerate(xai_methods):
@@ -111,9 +141,9 @@ def create_3x3_grid(images, output_path, spacing=30):
             if xai_method in images and subfolder in images[xai_method]:
                 img = images[xai_method][subfolder]
                 
-                # Calculate position
+                # Calculate position (offset by header height)
                 x = spacing + col * (max_width + spacing)
-                y = spacing + row * (max_height + spacing)
+                y = spacing + header_height + row * (max_height + spacing)
                 
                 # Center the image if it's smaller than max dimensions
                 if img.width < max_width:
@@ -141,8 +171,8 @@ def main():
     parser.add_argument('--data-folder', help='Folder name under data/ to process')
     parser.add_argument('--method', choices=['occlusion', 'revelation'], 
                        help='Evaluation method to use (occlusion or revelation)')
-    parser.add_argument('--output', '-o', default='xai_evaluation_grid.png',
-                       help='Output filename for the combined grid (default: xai_evaluation_grid.png)')
+    parser.add_argument('--output', '-o', default=None,
+                       help='Output filename for the combined grid (default: auto-generated)')
     
     args = parser.parse_args()
     
@@ -180,6 +210,10 @@ def main():
     
     eval_folder_path = os.path.join(xai_eval_path, selected_eval_folder)
     print(f"Selected evaluation folder: {eval_folder_path}")
+    
+    # Generate output filename if not provided
+    if args.output is None:
+        args.output = f"{args.data_folder}_{selected_eval_folder}_{args.method}_compare.png"
     
     # Steps 4-7: Extract images from gradcam, lime, and xrai folders
     images = extract_result_images(eval_folder_path, args.method)
