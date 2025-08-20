@@ -111,7 +111,7 @@ def create_3x3_grid(images, output_path, spacing=30):
     
     # Try to use a default font, fallback to basic font if not available
     try:
-        font = ImageFont.truetype("arial.ttf", 20)
+        font = ImageFont.truetype("arial.ttf", 60)
     except:
         try:
             font = ImageFont.load_default()
