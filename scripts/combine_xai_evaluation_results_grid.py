@@ -108,43 +108,12 @@ def create_3x3_grid(images, output_path, spacing=30):
     # Create white background
     grid_image = Image.new('RGB', (grid_width, grid_height), 'white')
     draw = ImageDraw.Draw(grid_image)
+    # Use PIL's default font
+    font = ImageFont.load_default()
     
-
-    def get_font_path():
-    # 常见字体路径
-        candidates = [
-            "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",  # Linux
-            "/usr/share/fonts/truetype/freefont/FreeSans.ttf",       # Linux备用
-            "/Library/Fonts/Arial.ttf",                              # macOS
-            "C:/Windows/Fonts/arial.ttf"                             # Windows
-        ]
-        for path in candidates:
-            if os.path.exists(path):
-                return path
-        return None
-
-    # Try to load a large TrueType font, fallback to default if not found
-    font_size = 200  # 先用200测试效果
-    font_path = get_font_path()
-
-    if font_path:
-        font = ImageFont.truetype(font_path, font_size)
-        print(f"Using font: {font_path} size {font_size}")
-    else:
-        font = ImageFont.load_default()
-        print("No system font found, using PIL default (small)")
-    
-    def draw_large_text(draw, text, x, y, color='black', font=None):
-        """Draw text with better visibility"""
-        if font:
-            draw.text((x, y), text, fill=color, font=font)
-        else:
-            # As fallback: simulate large text by scaling
-            scale_factor = 10
-            offsets = [(dx, dy) for dx in range(-scale_factor, scale_factor+1)
-                    for dy in range(-scale_factor, scale_factor+1)]
-            for dx, dy in offsets:
-                draw.text((x + dx, y + dy), text, fill=color)
+    def draw_large_text(draw, text, x, y, color='black'):
+        """Draw text with default font"""
+        draw.text((x, y), text, fill=color, font=font)
 
     
     # Add column headers
@@ -154,26 +123,15 @@ def create_3x3_grid(images, output_path, spacing=30):
         
         text = subfolder.upper()
         
-        if font:
-            # Get text dimensions for proper centering
-            try:
-                bbox = draw.textbbox((0, 0), text, font=font)
-                text_width = bbox[2] - bbox[0]
-                text_height = bbox[3] - bbox[1]
-                x_centered = x - text_width // 2
-                y_centered = y - text_height // 2
-            except:
-                # Fallback centering
-                x_centered = x - len(text) * 12  # Approximate centering for size 40
-                y_centered = y - 20
-        else:
-            # Approximate centering for scaled text
-            x_centered = x - len(text) * 18  # Larger approximation for scaled text
-            y_centered = y - 15
+        # Get text dimensions for proper centering
+        bbox = draw.textbbox((0, 0), text, font=font)
+        text_width = bbox[2] - bbox[0]
+        text_height = bbox[3] - bbox[1]
+        x_centered = x - text_width // 2
+        y_centered = y - text_height // 2
         
-        # Draw large text using our custom function
-        draw_large_text(draw, text, x_centered, y_centered, 'black', font)
-        print(f"Drew large text '{text}' at position ({x_centered}, {y_centered})")
+        # Draw text using our custom function
+        draw_large_text(draw, text, x_centered, y_centered, 'black')
     
     # Place images in grid
     for row, xai_method in enumerate(xai_methods):
