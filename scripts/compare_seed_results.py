@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Script to compare result.png files from different seed runs in XAI evaluation.
+Script to compare results.png files from different seed runs in XAI evaluation.
 
 This script:
 1. Navigates to the XAI_evaluation folder
 2. Prompts user to choose between alexnet_simple or simple_cnn
 3. Guides user through folder selection process
-4. Finds two result.png files and combines them
+4. Finds two results.png files and combines them
 5. Saves the combined image with descriptive naming
 """
 
@@ -67,8 +67,8 @@ def get_subfolders(path):
 
 
 def find_result_png(folder_path):
-    """Find result.png file in the given folder."""
-    result_path = os.path.join(folder_path, "result.png")
+    """Find results.png file in the given folder."""
+    result_path = os.path.join(folder_path, "results.png")
     if os.path.exists(result_path):
         return result_path
     return None
@@ -188,19 +188,19 @@ def main():
             'sub3': chosen_subfolder3
         })
     
-    # Step 7: Find result.png files in both selected paths
+    # Step 7: Find results.png files in both selected paths
     result_images = []
     for path_info in selected_paths:
         result_path = find_result_png(path_info['path'])
         if result_path:
             result_images.append(result_path)
-            print(f"Found result.png in: {path_info['path']}")
+            print(f"Found results.png in: {path_info['path']}")
         else:
-            print(f"Error: result.png not found in: {path_info['path']}")
+            print(f"Error: results.png not found in: {path_info['path']}")
             sys.exit(1)
     
     if len(result_images) != 2:
-        print(f"Error: Expected 2 result.png files, found {len(result_images)}")
+        print(f"Error: Expected 2 results.png files, found {len(result_images)}")
         sys.exit(1)
     
     # Create output directory
