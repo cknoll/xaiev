@@ -132,39 +132,53 @@ def main():
     
     print(f"Found {len(model_folders)} folders starting with '{chosen_model}'")
     
-    # We need to navigate through both folders in parallel
-    selected_paths = []
+    # Get user choices once and apply to both folders
+    print(f"\n--- Getting folder navigation choices ---")
     
+    # Step 4: Choose first subfolder level (using first folder as reference)
+    first_folder_path = os.path.join(base_folder, model_folders[0])
+    subfolders1 = get_subfolders(first_folder_path)
+    if not subfolders1:
+        print(f"No subfolders found in {first_folder_path}")
+        sys.exit(1)
+    
+    chosen_subfolder1 = get_user_choice(f"Choose first level subfolder:", subfolders1)
+    
+    # Step 5: Choose second subfolder level
+    temp_path = os.path.join(first_folder_path, chosen_subfolder1)
+    subfolders2 = get_subfolders(temp_path)
+    if not subfolders2:
+        print(f"No subfolders found in {temp_path}")
+        sys.exit(1)
+    
+    chosen_subfolder2 = get_user_choice(f"Choose second level subfolder:", subfolders2)
+    
+    # Step 6: Automatically go to "test" subfolder
+    temp_path = os.path.join(temp_path, chosen_subfolder2, "test")
+    if not os.path.exists(temp_path):
+        print(f"Error: 'test' subfolder not found in {os.path.join(temp_path, '..')}")
+        sys.exit(1)
+    
+    print(f"Automatically navigating to 'test' subfolder")
+    
+    # Step 7: Choose third level subfolder
+    subfolders3 = get_subfolders(temp_path)
+    if not subfolders3:
+        print(f"No subfolders found in {temp_path}")
+        sys.exit(1)
+    
+    chosen_subfolder3 = get_user_choice(f"Choose third level subfolder:", subfolders3)
+    
+    # Apply the same choices to both folders
+    selected_paths = []
     for i, folder in enumerate(model_folders[:2]):  # Take first 2 folders
-        current_path = os.path.join(base_folder, folder)
-        print(f"\n--- Processing folder {i+1}: {folder} ---")
+        current_path = os.path.join(base_folder, folder, chosen_subfolder1, chosen_subfolder2, "test", chosen_subfolder3)
         
-        # Step 4: Choose first subfolder level
-        subfolders1 = get_subfolders(current_path)
-        if not subfolders1:
-            print(f"No subfolders found in {current_path}")
+        if not os.path.exists(current_path):
+            print(f"Error: Path does not exist: {current_path}")
             sys.exit(1)
         
-        chosen_subfolder1 = get_user_choice(f"Choose subfolder in {folder}:", subfolders1)
-        current_path = os.path.join(current_path, chosen_subfolder1)
-        
-        # Step 5: Choose second subfolder level
-        subfolders2 = get_subfolders(current_path)
-        if not subfolders2:
-            print(f"No subfolders found in {current_path}")
-            sys.exit(1)
-        
-        chosen_subfolder2 = get_user_choice(f"Choose second level subfolder:", subfolders2)
-        current_path = os.path.join(current_path, chosen_subfolder2)
-        
-        # Step 6: Choose third subfolder level
-        subfolders3 = get_subfolders(current_path)
-        if not subfolders3:
-            print(f"No subfolders found in {current_path}")
-            sys.exit(1)
-        
-        chosen_subfolder3 = get_user_choice(f"Choose third level subfolder:", subfolders3)
-        current_path = os.path.join(current_path, chosen_subfolder3)
+        print(f"Applied choices to folder {i+1}: {folder}")
         
         selected_paths.append({
             'path': current_path,
@@ -197,7 +211,7 @@ def main():
     path1_info = selected_paths[0]
     path2_info = selected_paths[1]
     
-    output_filename = f"{chosen_model}_{path1_info['sub1']}_{path1_info['sub2']}_{path1_info['sub3']}_vs_{path2_info['sub1']}_{path2_info['sub2']}_{path2_info['sub3']}.png"
+    output_filename = f"{chosen_model}_{path1_info['sub1']}_{path1_info['sub2']}_test_{path1_info['sub3']}_vs_{path2_info['sub1']}_{path2_info['sub2']}_test_{path2_info['sub3']}.png"
     output_path = os.path.join(output_dir, output_filename)
     
     # Combine the images
@@ -207,8 +221,8 @@ def main():
         print(f"\nSuccess! Combined image created:")
         print(f"Output: {output_path}")
         print(f"Comparing:")
-        print(f"  - {selected_paths[0]['folder']}/{path1_info['sub1']}/{path1_info['sub2']}/{path1_info['sub3']}")
-        print(f"  - {selected_paths[1]['folder']}/{path2_info['sub1']}/{path2_info['sub2']}/{path2_info['sub3']}")
+        print(f"  - {selected_paths[0]['folder']}/{path1_info['sub1']}/{path1_info['sub2']}/test/{path1_info['sub3']}")
+        print(f"  - {selected_paths[1]['folder']}/{path2_info['sub1']}/{path2_info['sub2']}/test/{path2_info['sub3']}")
     else:
         print("Failed to create combined image")
         sys.exit(1)
