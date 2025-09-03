@@ -96,31 +96,90 @@ def create_combined_plot(data_row, xai_method, output_path):
         if subfolder in data_row:
             pcl_data = data_row[subfolder]
             
-            # Assuming pcl_data contains x and y values for plotting
-            # You may need to adjust this based on the actual structure of your .pcl files
+            # Debug: Print the structure of the data
+            print(f"Debug: {xai_method}/{subfolder} data type: {type(pcl_data)}")
             if isinstance(pcl_data, dict):
-                if 'x' in pcl_data and 'y' in pcl_data:
-                    x_data = pcl_data['x']
-                    y_data = pcl_data['y']
-                elif 'data' in pcl_data:
-                    # If data is stored differently, adjust accordingly
-                    plot_data = pcl_data['data']
-                    if isinstance(plot_data, list) and len(plot_data) >= 2:
-                        x_data = plot_data[0]
-                        y_data = plot_data[1]
-                    else:
-                        x_data = range(len(plot_data))
-                        y_data = plot_data
-                else:
-                    # Fallback: assume it's a list or array
-                    y_data = list(pcl_data.values())[0] if isinstance(pcl_data, dict) else pcl_data
-                    x_data = range(len(y_data))
-            else:
-                # If pcl_data is directly a list/array
-                y_data = pcl_data
-                x_data = range(len(y_data))
+                print(f"Debug: {xai_method}/{subfolder} keys: {list(pcl_data.keys())}")
+            elif isinstance(pcl_data, (list, tuple)):
+                print(f"Debug: {xai_method}/{subfolder} length: {len(pcl_data)}")
+                if len(pcl_data) > 0:
+                    print(f"Debug: {xai_method}/{subfolder} first element type: {type(pcl_data[0])}")
             
-            plt.plot(x_data, y_data, color=colors[i], label=subfolder.upper(), linewidth=2)
+            try:
+                # Try different data extraction strategies
+                x_data = None
+                y_data = None
+                
+                if isinstance(pcl_data, dict):
+                    # Strategy 1: Look for common key patterns
+                    if 'x' in pcl_data and 'y' in pcl_data:
+                        x_data = np.array(pcl_data['x'])
+                        y_data = np.array(pcl_data['y'])
+                    elif 'data' in pcl_data:
+                        plot_data = pcl_data['data']
+                        if isinstance(plot_data, (list, tuple)) and len(plot_data) >= 2:
+                            x_data = np.array(plot_data[0])
+                            y_data = np.array(plot_data[1])
+                        else:
+                            y_data = np.array(plot_data)
+                            x_data = np.arange(len(y_data))
+                    elif 'values' in pcl_data:
+                        y_data = np.array(pcl_data['values'])
+                        x_data = np.arange(len(y_data))
+                    else:
+                        # Try to use the first value that looks like data
+                        for key, value in pcl_data.items():
+                            if isinstance(value, (list, tuple, np.ndarray)) and len(value) > 0:
+                                y_data = np.array(value)
+                                x_data = np.arange(len(y_data))
+                                break
+                
+                elif isinstance(pcl_data, (list, tuple)):
+                    # Strategy 2: Direct list/tuple
+                    if len(pcl_data) >= 2 and all(isinstance(item, (list, tuple, np.ndarray)) for item in pcl_data[:2]):
+                        x_data = np.array(pcl_data[0])
+                        y_data = np.array(pcl_data[1])
+                    else:
+                        y_data = np.array(pcl_data)
+                        x_data = np.arange(len(y_data))
+                
+                elif isinstance(pcl_data, np.ndarray):
+                    # Strategy 3: Direct numpy array
+                    if pcl_data.ndim == 2 and pcl_data.shape[0] >= 2:
+                        x_data = pcl_data[0]
+                        y_data = pcl_data[1]
+                    else:
+                        y_data = pcl_data.flatten()
+                        x_data = np.arange(len(y_data))
+                
+                else:
+                    # Strategy 4: Try to convert directly
+                    y_data = np.array(pcl_data)
+                    x_data = np.arange(len(y_data))
+                
+                # Ensure we have valid data
+                if x_data is None or y_data is None:
+                    print(f"Warning: Could not extract plottable data for {xai_method}/{subfolder}")
+                    continue
+                
+                # Ensure both arrays are 1D and same length
+                x_data = np.array(x_data).flatten()
+                y_data = np.array(y_data).flatten()
+                
+                if len(x_data) != len(y_data):
+                    print(f"Warning: x and y data length mismatch for {xai_method}/{subfolder}: {len(x_data)} vs {len(y_data)}")
+                    # Use the shorter length
+                    min_len = min(len(x_data), len(y_data))
+                    x_data = x_data[:min_len]
+                    y_data = y_data[:min_len]
+                
+                plt.plot(x_data, y_data, color=colors[i], label=subfolder.upper(), linewidth=2)
+                print(f"Successfully plotted {xai_method}/{subfolder} with {len(y_data)} points")
+                
+            except Exception as e:
+                print(f"Error plotting {xai_method}/{subfolder}: {e}")
+                print(f"Data sample: {str(pcl_data)[:200]}...")
+                continue
         else:
             print(f"Warning: Missing data for {xai_method}/{subfolder}")
     
