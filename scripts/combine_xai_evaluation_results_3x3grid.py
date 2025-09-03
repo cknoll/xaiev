@@ -123,15 +123,6 @@ def create_combined_plot(data_row, xai_method, output_path):
                             
                             plt.plot(x_data, y_data, color=colors[i], label=subfolder.upper(), linewidth=2, marker='o')
                             
-                            # Add annotations like in visualize_evaluation
-                            for j in range(len(y_data)):
-                                plt.annotate(f'{y_data[j]:.3f}',
-                                           xy=(x_data[j], y_data[j]),
-                                           xytext=(3, 6),
-                                           textcoords='offset points',
-                                           ha='center',
-                                           fontsize=8)
-                            
                             print(f"Successfully plotted {xai_method}/{subfolder} with {len(y_data)} points")
                         else:
                             print(f"Warning: 'correct' data is not array-like for {xai_method}/{subfolder}")
