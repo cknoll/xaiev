@@ -96,132 +96,66 @@ def create_combined_plot(data_row, xai_method, output_path):
         if subfolder in data_row:
             pcl_data = data_row[subfolder]
             
-            # Debug: Print the structure of the data
-            print(f"Debug: {xai_method}/{subfolder} data type: {type(pcl_data)}")
-            if isinstance(pcl_data, dict):
-                print(f"Debug: {xai_method}/{subfolder} keys: {list(pcl_data.keys())}")
-            elif isinstance(pcl_data, (list, tuple)):
-                print(f"Debug: {xai_method}/{subfolder} length: {len(pcl_data)}")
-                if len(pcl_data) > 0:
-                    print(f"Debug: {xai_method}/{subfolder} first element type: {type(pcl_data[0])}")
-            
             try:
-                # Try different data extraction strategies
-                x_data = None
-                y_data = None
-                
-                if isinstance(pcl_data, dict):
-                    # Strategy 1: Look for XAI method key (gradcam, lime, xrai)
-                    if xai_method in pcl_data:
-                        method_data = pcl_data[xai_method]
-                        print(f"Debug: Found {xai_method} key, data type: {type(method_data)}")
-                        
-                        if isinstance(method_data, (list, tuple)) and len(method_data) > 0:
-                            # This appears to be a list/tuple of arrays
-                            print(f"Debug: Method data length: {len(method_data)}")
-                            
-                            # Try to extract meaningful data from the arrays
-                            # Assuming the arrays contain evaluation results at different thresholds
-                            if len(method_data) >= 1:
-                                # Use the first array as y_data
-                                first_array = method_data[0]
-                                if isinstance(first_array, np.ndarray):
-                                    y_data = first_array.flatten()
-                                    x_data = np.arange(len(y_data))
-                                    print(f"Debug: Using first array with {len(y_data)} points")
-                                else:
-                                    print(f"Debug: First element is not array: {type(first_array)}")
-                                    continue
-                            else:
-                                print(f"Debug: Empty method data")
-                                continue
-                        else:
-                            print(f"Debug: Method data is not list/tuple: {type(method_data)}")
-                            continue
+                # Follow the same pattern as visualize_evaluation function
+                if isinstance(pcl_data, dict) and xai_method in pcl_data:
+                    # Extract the tuple data: (correct, correct_5, softmax, score, loss)
+                    method_tuple = pcl_data[xai_method]
                     
-                    # Strategy 2: Look for common key patterns
-                    elif 'x' in pcl_data and 'y' in pcl_data:
-                        x_data = np.array(pcl_data['x'])
-                        y_data = np.array(pcl_data['y'])
-                    elif 'data' in pcl_data:
-                        plot_data = pcl_data['data']
-                        if isinstance(plot_data, (list, tuple)) and len(plot_data) >= 2:
-                            x_data = np.array(plot_data[0])
-                            y_data = np.array(plot_data[1])
+                    if isinstance(method_tuple, (list, tuple)) and len(method_tuple) >= 1:
+                        # Get the 'correct' data (first element of the tuple)
+                        correct = method_tuple[0]
+                        
+                        # Process the same way as in visualize_evaluation:
+                        # accuracy = np.mean((np.divide(correct, 50)), axis=1)
+                        if isinstance(correct, (list, np.ndarray)):
+                            correct = np.array(correct)
+                            accuracy = np.mean(np.divide(correct, 50), axis=1) if correct.ndim > 1 else np.divide(correct, 50)
+                            
+                            # Create x-axis data (percentage range: 0, 10, 20, ..., 100)
+                            x_data = list(range(0, 101, 10))
+                            y_data = accuracy
+                            
+                            # Ensure x and y have same length
+                            min_len = min(len(x_data), len(y_data))
+                            x_data = x_data[:min_len]
+                            y_data = y_data[:min_len]
+                            
+                            plt.plot(x_data, y_data, color=colors[i], label=subfolder.upper(), linewidth=2, marker='o')
+                            
+                            # Add annotations like in visualize_evaluation
+                            for j in range(len(y_data)):
+                                plt.annotate(f'{y_data[j]:.3f}',
+                                           xy=(x_data[j], y_data[j]),
+                                           xytext=(3, 6),
+                                           textcoords='offset points',
+                                           ha='center',
+                                           fontsize=8)
+                            
+                            print(f"Successfully plotted {xai_method}/{subfolder} with {len(y_data)} points")
                         else:
-                            y_data = np.array(plot_data)
-                            x_data = np.arange(len(y_data))
-                    elif 'values' in pcl_data:
-                        y_data = np.array(pcl_data['values'])
-                        x_data = np.arange(len(y_data))
+                            print(f"Warning: 'correct' data is not array-like for {xai_method}/{subfolder}")
+                            continue
                     else:
-                        # Try to use the first value that looks like data
-                        for key, value in pcl_data.items():
-                            if isinstance(value, (list, tuple)) and len(value) > 0:
-                                # Check if it's a list of arrays
-                                if isinstance(value[0], np.ndarray):
-                                    y_data = value[0].flatten()
-                                    x_data = np.arange(len(y_data))
-                                    break
-                            elif isinstance(value, np.ndarray) and len(value) > 0:
-                                y_data = value.flatten()
-                                x_data = np.arange(len(y_data))
-                                break
-                
-                elif isinstance(pcl_data, (list, tuple)):
-                    # Strategy 2: Direct list/tuple
-                    if len(pcl_data) >= 2 and all(isinstance(item, (list, tuple, np.ndarray)) for item in pcl_data[:2]):
-                        x_data = np.array(pcl_data[0])
-                        y_data = np.array(pcl_data[1])
-                    else:
-                        y_data = np.array(pcl_data)
-                        x_data = np.arange(len(y_data))
-                
-                elif isinstance(pcl_data, np.ndarray):
-                    # Strategy 3: Direct numpy array
-                    if pcl_data.ndim == 2 and pcl_data.shape[0] >= 2:
-                        x_data = pcl_data[0]
-                        y_data = pcl_data[1]
-                    else:
-                        y_data = pcl_data.flatten()
-                        x_data = np.arange(len(y_data))
-                
+                        print(f"Warning: Method data is not tuple/list for {xai_method}/{subfolder}")
+                        continue
                 else:
-                    # Strategy 4: Try to convert directly
-                    y_data = np.array(pcl_data)
-                    x_data = np.arange(len(y_data))
-                
-                # Ensure we have valid data
-                if x_data is None or y_data is None:
-                    print(f"Warning: Could not extract plottable data for {xai_method}/{subfolder}")
+                    print(f"Warning: Could not find {xai_method} key in data for {subfolder}")
                     continue
-                
-                # Ensure both arrays are 1D and same length
-                x_data = np.array(x_data).flatten()
-                y_data = np.array(y_data).flatten()
-                
-                if len(x_data) != len(y_data):
-                    print(f"Warning: x and y data length mismatch for {xai_method}/{subfolder}: {len(x_data)} vs {len(y_data)}")
-                    # Use the shorter length
-                    min_len = min(len(x_data), len(y_data))
-                    x_data = x_data[:min_len]
-                    y_data = y_data[:min_len]
-                
-                plt.plot(x_data, y_data, color=colors[i], label=subfolder.upper(), linewidth=2)
-                print(f"Successfully plotted {xai_method}/{subfolder} with {len(y_data)} points")
-                
+                    
             except Exception as e:
                 print(f"Error plotting {xai_method}/{subfolder}: {e}")
-                print(f"Data sample: {str(pcl_data)[:200]}...")
                 continue
         else:
             print(f"Warning: Missing data for {xai_method}/{subfolder}")
     
     plt.title(f'{xai_method.upper()} Results', fontsize=14, fontweight='bold')
-    plt.xlabel('X Values', fontsize=12)
-    plt.ylabel('Y Values', fontsize=12)
+    plt.xlabel('Percentage', fontsize=12)
+    plt.ylabel('Accuracy', fontsize=12)
     plt.legend(fontsize=10)
     plt.grid(True, alpha=0.3)
+    plt.xlim(0, 100)
+    plt.ylim(0, 1)
     plt.tight_layout()
     
     # Save plot to BytesIO buffer
