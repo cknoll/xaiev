@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
 """
-Script to compare results.png files from different seed runs in XAI evaluation.
+Script to automatically compare results.png files from different seed runs in XAI evaluation.
 
 This script:
 1. Navigates to the XAI_evaluation folder
-2. Prompts user to choose between alexnet_simple or simple_cnn
-3. Guides user through folder selection process
-4. Finds two results.png files and combines them
-5. Saves the combined image with descriptive naming
+2. Automatically processes both alexnet_simple and simple_cnn models
+3. Finds all possible folder combinations
+4. Generates comparison images for all valid combinations
+5. Saves the combined images with descriptive naming
 """
 
 import os
 import sys
 from PIL import Image
 from pathlib import Path
+from itertools import combinations
 
 
 def ensure_dir(path):
@@ -21,21 +22,79 @@ def ensure_dir(path):
     Path(path).mkdir(parents=True, exist_ok=True)
 
 
-def get_user_choice(prompt, options):
-    """Get user choice from a list of options."""
-    print(f"\n{prompt}")
-    for i, option in enumerate(options, 1):
-        print(f"{i}. {option}")
+def get_all_valid_paths(base_folder, model_prefix):
+    """Get all valid paths that contain results.png files for a given model prefix."""
+    valid_paths = []
+    model_folders = get_folders_starting_with(base_folder, model_prefix)
     
-    while True:
-        try:
-            choice = int(input("Enter your choice (number): ")) - 1
-            if 0 <= choice < len(options):
-                return options[choice]
-            else:
-                print(f"Please enter a number between 1 and {len(options)}")
-        except ValueError:
-            print("Please enter a valid number")
+    for model_folder in model_folders:
+        model_path = os.path.join(base_folder, model_folder)
+        
+        # Get first level subfolders
+        subfolders1 = get_subfolders(model_path)
+        for sub1 in subfolders1:
+            sub1_path = os.path.join(model_path, sub1)
+            
+            # Get second level subfolders
+            subfolders2 = get_subfolders(sub1_path)
+            for sub2 in subfolders2:
+                test_path = os.path.join(sub1_path, sub2, "test")
+                
+                if os.path.exists(test_path):
+                    # Get third level subfolders
+                    subfolders3 = get_subfolders(test_path)
+                    for sub3 in subfolders3:
+                        final_path = os.path.join(test_path, sub3)
+                        result_png = find_result_png(final_path)
+                        
+                        if result_png:
+                            valid_paths.append({
+                                'path': final_path,
+                                'result_png': result_png,
+                                'folder': model_folder,
+                                'sub1': sub1,
+                                'sub2': sub2,
+                                'sub3': sub3
+                            })
+    
+    return valid_paths
+
+
+def process_model(base_folder, model_prefix, output_dir):
+    """Process all combinations for a specific model."""
+    print(f"\nProcessing model: {model_prefix}")
+    
+    # Get all valid paths for this model
+    valid_paths = get_all_valid_paths(base_folder, model_prefix)
+    
+    if len(valid_paths) < 2:
+        print(f"Skipping {model_prefix}: Need at least 2 valid paths, found {len(valid_paths)}")
+        return 0
+    
+    print(f"Found {len(valid_paths)} valid paths for {model_prefix}")
+    
+    # Generate all possible combinations of 2 paths
+    combinations_count = 0
+    for path1, path2 in combinations(valid_paths, 2):
+        # Generate output filename
+        output_filename = f"{model_prefix}_{path1['sub1']}_{path1['sub2']}_test_{path1['sub3']}_vs_{path2['sub1']}_{path2['sub2']}_test_{path2['sub3']}.png"
+        output_path = os.path.join(output_dir, output_filename)
+        
+        # Skip if output already exists
+        if os.path.exists(output_path):
+            print(f"Skipping existing: {output_filename}")
+            continue
+        
+        # Combine the images
+        success = combine_images(path1['result_png'], path2['result_png'], output_path, gap=20)
+        
+        if success:
+            combinations_count += 1
+            print(f"Created: {output_filename}")
+        else:
+            print(f"Failed to create: {output_filename}")
+    
+    return combinations_count
 
 
 def get_folders_starting_with(base_path, prefix):
@@ -118,114 +177,22 @@ def main():
     
     print(f"Working in: {base_folder}")
     
-    # Step 2: Ask user to choose between alexnet_simple or simple_cnn
-    model_options = ["alexnet_simple", "simple_cnn"]
-    chosen_model = get_user_choice("Choose a model:", model_options)
-    print(f"Selected model: {chosen_model}")
-    
-    # Step 3: Find folders starting with the chosen model
-    model_folders = get_folders_starting_with(base_folder, chosen_model)
-    
-    if len(model_folders) < 2:
-        print(f"Error: Need at least 2 folders starting with '{chosen_model}', found {len(model_folders)}")
-        sys.exit(1)
-    
-    print(f"Found {len(model_folders)} folders starting with '{chosen_model}'")
-    
-    # Get user choices once and apply to both folders
-    print(f"\n--- Getting folder navigation choices ---")
-    
-    # Step 4: Choose first subfolder level (using first folder as reference)
-    first_folder_path = os.path.join(base_folder, model_folders[0])
-    subfolders1 = get_subfolders(first_folder_path)
-    if not subfolders1:
-        print(f"No subfolders found in {first_folder_path}")
-        sys.exit(1)
-    
-    chosen_subfolder1 = get_user_choice(f"Choose first level subfolder:", subfolders1)
-    
-    # Step 5: Choose second subfolder level
-    temp_path = os.path.join(first_folder_path, chosen_subfolder1)
-    subfolders2 = get_subfolders(temp_path)
-    if not subfolders2:
-        print(f"No subfolders found in {temp_path}")
-        sys.exit(1)
-    
-    chosen_subfolder2 = get_user_choice(f"Choose second level subfolder:", subfolders2)
-    
-    # Step 6: Automatically go to "test" subfolder
-    temp_path = os.path.join(temp_path, chosen_subfolder2, "test")
-    if not os.path.exists(temp_path):
-        print(f"Error: 'test' subfolder not found in {os.path.join(temp_path, '..')}")
-        sys.exit(1)
-    
-    print(f"Automatically navigating to 'test' subfolder")
-    
-    # Step 7: Choose third level subfolder
-    subfolders3 = get_subfolders(temp_path)
-    if not subfolders3:
-        print(f"No subfolders found in {temp_path}")
-        sys.exit(1)
-    
-    chosen_subfolder3 = get_user_choice(f"Choose third level subfolder:", subfolders3)
-    
-    # Apply the same choices to both folders
-    selected_paths = []
-    for i, folder in enumerate(model_folders[:2]):  # Take first 2 folders
-        current_path = os.path.join(base_folder, folder, chosen_subfolder1, chosen_subfolder2, "test", chosen_subfolder3)
-        
-        if not os.path.exists(current_path):
-            print(f"Error: Path does not exist: {current_path}")
-            sys.exit(1)
-        
-        print(f"Applied choices to folder {i+1}: {folder}")
-        
-        selected_paths.append({
-            'path': current_path,
-            'folder': folder,
-            'sub1': chosen_subfolder1,
-            'sub2': chosen_subfolder2,
-            'sub3': chosen_subfolder3
-        })
-    
-    # Step 7: Find results.png files in both selected paths
-    result_images = []
-    for path_info in selected_paths:
-        result_path = find_result_png(path_info['path'])
-        if result_path:
-            result_images.append(result_path)
-            print(f"Found results.png in: {path_info['path']}")
-        else:
-            print(f"Error: results.png not found in: {path_info['path']}")
-            sys.exit(1)
-    
-    if len(result_images) != 2:
-        print(f"Error: Expected 2 results.png files, found {len(result_images)}")
-        sys.exit(1)
-    
     # Create output directory
     output_dir = os.path.join(base_folder, "compare_different_seed_result")
     ensure_dir(output_dir)
+    print(f"Output directory: {output_dir}")
     
-    # Generate output filename based on user choices
-    path1_info = selected_paths[0]
-    path2_info = selected_paths[1]
+    # Process both model types automatically
+    model_options = ["alexnet_simple", "simple_cnn"]
+    total_combinations = 0
     
-    output_filename = f"{chosen_model}_{path1_info['sub1']}_{path1_info['sub2']}_test_{path1_info['sub3']}_vs_{path2_info['sub1']}_{path2_info['sub2']}_test_{path2_info['sub3']}.png"
-    output_path = os.path.join(output_dir, output_filename)
+    for model_prefix in model_options:
+        combinations_count = process_model(base_folder, model_prefix, output_dir)
+        total_combinations += combinations_count
     
-    # Combine the images
-    success = combine_images(result_images[0], result_images[1], output_path, gap=20)
-    
-    if success:
-        print(f"\nSuccess! Combined image created:")
-        print(f"Output: {output_path}")
-        print(f"Comparing:")
-        print(f"  - {selected_paths[0]['folder']}/{path1_info['sub1']}/{path1_info['sub2']}/test/{path1_info['sub3']}")
-        print(f"  - {selected_paths[1]['folder']}/{path2_info['sub1']}/{path2_info['sub2']}/test/{path2_info['sub3']}")
-    else:
-        print("Failed to create combined image")
-        sys.exit(1)
+    print(f"\n=== Summary ===")
+    print(f"Total combinations created: {total_combinations}")
+    print(f"Output directory: {output_dir}")
 
 
 if __name__ == "__main__":
