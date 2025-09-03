@@ -94,7 +94,7 @@ def process_model(base_folder, model_prefix, output_dir):
         # Generate combinations between different model folders for this path
         for folder1, folder2 in combinations(valid_model_folders, 2):
             # Generate output filename
-            output_filename = f"{model_prefix}_{sub1}_{sub2}_test_{sub3}_vs_{folder1['folder']}_vs_{folder2['folder']}.png"
+            output_filename = f"{sub1}_{sub2}_test_{sub3}_vs_{folder1['folder']}_vs_{folder2['folder']}.png"
             output_path = os.path.join(output_dir, output_filename)
             
             # Skip if output already exists
