@@ -111,8 +111,36 @@ def create_combined_plot(data_row, xai_method, output_path):
                 y_data = None
                 
                 if isinstance(pcl_data, dict):
-                    # Strategy 1: Look for common key patterns
-                    if 'x' in pcl_data and 'y' in pcl_data:
+                    # Strategy 1: Look for XAI method key (gradcam, lime, xrai)
+                    if xai_method in pcl_data:
+                        method_data = pcl_data[xai_method]
+                        print(f"Debug: Found {xai_method} key, data type: {type(method_data)}")
+                        
+                        if isinstance(method_data, (list, tuple)) and len(method_data) > 0:
+                            # This appears to be a list/tuple of arrays
+                            print(f"Debug: Method data length: {len(method_data)}")
+                            
+                            # Try to extract meaningful data from the arrays
+                            # Assuming the arrays contain evaluation results at different thresholds
+                            if len(method_data) >= 1:
+                                # Use the first array as y_data
+                                first_array = method_data[0]
+                                if isinstance(first_array, np.ndarray):
+                                    y_data = first_array.flatten()
+                                    x_data = np.arange(len(y_data))
+                                    print(f"Debug: Using first array with {len(y_data)} points")
+                                else:
+                                    print(f"Debug: First element is not array: {type(first_array)}")
+                                    continue
+                            else:
+                                print(f"Debug: Empty method data")
+                                continue
+                        else:
+                            print(f"Debug: Method data is not list/tuple: {type(method_data)}")
+                            continue
+                    
+                    # Strategy 2: Look for common key patterns
+                    elif 'x' in pcl_data and 'y' in pcl_data:
                         x_data = np.array(pcl_data['x'])
                         y_data = np.array(pcl_data['y'])
                     elif 'data' in pcl_data:
@@ -129,8 +157,14 @@ def create_combined_plot(data_row, xai_method, output_path):
                     else:
                         # Try to use the first value that looks like data
                         for key, value in pcl_data.items():
-                            if isinstance(value, (list, tuple, np.ndarray)) and len(value) > 0:
-                                y_data = np.array(value)
+                            if isinstance(value, (list, tuple)) and len(value) > 0:
+                                # Check if it's a list of arrays
+                                if isinstance(value[0], np.ndarray):
+                                    y_data = value[0].flatten()
+                                    x_data = np.arange(len(y_data))
+                                    break
+                            elif isinstance(value, np.ndarray) and len(value) > 0:
+                                y_data = value.flatten()
                                 x_data = np.arange(len(y_data))
                                 break
                 
