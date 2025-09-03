@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Script to combine XAI evaluation results into a 3x3 grid.
+Script to combine XAI evaluation results into a 3x1 grid of plots.
 
 This script:
 1. Finds folders under data/ and asks user to choose via command line args
 2. Navigates to XAI_evaluation folder and asks user to choose interactively
-3. Extracts result.png files from gradcam/, lime/, and xrai/ folders
-4. Creates a 3x3 grid with proper spacing and ordering
+3. Extracts results.pcl files from gradcam/, lime/, and xrai/ folders
+4. Creates plots combining 3 curves per row, resulting in a 3x1 grid
 """
 
 import os
@@ -14,6 +14,12 @@ import argparse
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 import sys
+import pickle
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend
+import numpy as np
+from io import BytesIO
 
 
 def get_available_folders(base_path):
@@ -45,14 +51,14 @@ def select_folder_interactive(base_path, prompt_message):
             print("Please enter a valid number.")
 
 
-def extract_result_images(base_path, method):
-    """Extract result.png files from the XAI evaluation structure."""
-    images = {}
+def extract_result_data(base_path, method):
+    """Extract results.pcl files from the XAI evaluation structure."""
+    data = {}
     xai_methods = ['gradcam', 'lime', 'xrai']
     subfolder_order = ['average', 'default', 'black']  # Order for grid placement
     
     for xai_method in xai_methods:
-        images[xai_method] = {}
+        data[xai_method] = {}
         xai_path = os.path.join(base_path, xai_method)
         
         if not os.path.exists(xai_path):
@@ -63,96 +69,118 @@ def extract_result_images(base_path, method):
         subfolders = get_available_folders(xai_path)
         
         for subfolder in subfolders:
-            result_path = os.path.join(xai_path, subfolder, 'test', method, 'results.png')
+            result_path = os.path.join(xai_path, subfolder, 'test', method, 'results.pcl')
             
             if os.path.exists(result_path):
                 try:
-                    img = Image.open(result_path)
-                    images[xai_method][subfolder] = img.copy()
+                    with open(result_path, 'rb') as f:
+                        pcl_data = pickle.load(f)
+                    data[xai_method][subfolder] = pcl_data
                     print(f"Loaded: {result_path}")
                 except Exception as e:
                     print(f"Error loading {result_path}: {e}")
             else:
-                print(f"Warning: result.png not found at {result_path}")
+                print(f"Warning: results.pcl not found at {result_path}")
     
-    return images
+    return data
 
 
-def create_3x3_grid(images, output_path, spacing=30):
-    """Create a 3x3 grid of images with proper spacing."""
-    xai_methods = ['gradcam', 'lime', 'xrai']
+def create_combined_plot(data_row, xai_method, output_path):
+    """Create a single plot combining data from 3 subfolders for one XAI method."""
     subfolder_order = ['average', 'default', 'black']
+    colors = ['blue', 'red', 'green']
     
-    # Find the maximum image dimensions
-    max_width = 0
-    max_height = 0
+    plt.figure(figsize=(10, 6))
+    
+    for i, subfolder in enumerate(subfolder_order):
+        if subfolder in data_row:
+            pcl_data = data_row[subfolder]
+            
+            # Assuming pcl_data contains x and y values for plotting
+            # You may need to adjust this based on the actual structure of your .pcl files
+            if isinstance(pcl_data, dict):
+                if 'x' in pcl_data and 'y' in pcl_data:
+                    x_data = pcl_data['x']
+                    y_data = pcl_data['y']
+                elif 'data' in pcl_data:
+                    # If data is stored differently, adjust accordingly
+                    plot_data = pcl_data['data']
+                    if isinstance(plot_data, list) and len(plot_data) >= 2:
+                        x_data = plot_data[0]
+                        y_data = plot_data[1]
+                    else:
+                        x_data = range(len(plot_data))
+                        y_data = plot_data
+                else:
+                    # Fallback: assume it's a list or array
+                    y_data = list(pcl_data.values())[0] if isinstance(pcl_data, dict) else pcl_data
+                    x_data = range(len(y_data))
+            else:
+                # If pcl_data is directly a list/array
+                y_data = pcl_data
+                x_data = range(len(y_data))
+            
+            plt.plot(x_data, y_data, color=colors[i], label=subfolder.upper(), linewidth=2)
+        else:
+            print(f"Warning: Missing data for {xai_method}/{subfolder}")
+    
+    plt.title(f'{xai_method.upper()} Results', fontsize=14, fontweight='bold')
+    plt.xlabel('X Values', fontsize=12)
+    plt.ylabel('Y Values', fontsize=12)
+    plt.legend(fontsize=10)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    
+    # Save plot to BytesIO buffer
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
+    buffer.seek(0)
+    
+    # Convert to PIL Image
+    plot_image = Image.open(buffer)
+    plt.close()  # Close the figure to free memory
+    
+    return plot_image
+
+
+def create_3x1_grid(data, output_path, spacing=30):
+    """Create a 3x1 grid of combined plots."""
+    xai_methods = ['gradcam', 'lime', 'xrai']
+    
+    # Create individual plots for each XAI method
+    plot_images = []
     
     for xai_method in xai_methods:
-        for subfolder in subfolder_order:
-            if xai_method in images and subfolder in images[xai_method]:
-                img = images[xai_method][subfolder]
-                max_width = max(max_width, img.width)
-                max_height = max(max_height, img.height)
+        if xai_method in data:
+            plot_img = create_combined_plot(data[xai_method], xai_method, output_path)
+            plot_images.append(plot_img)
+            print(f"Created plot for {xai_method}")
+        else:
+            print(f"Warning: No data found for {xai_method}")
+            # Create empty placeholder
+            plot_images.append(Image.new('RGB', (800, 480), 'white'))
     
-    if max_width == 0 or max_height == 0:
-        print("Error: No valid images found to create grid")
+    if not plot_images:
+        print("Error: No valid plots created")
         return False
     
-    # Calculate header height for column labels
-    header_height = 80
-    
     # Calculate grid dimensions
-    grid_width = 3 * max_width + 4 * spacing  # 3 images + 4 spacing areas (left, 2 middle, right)
-    grid_height = 3 * max_height + 4 * spacing + header_height  # 3 rows + 4 spacing areas + header
+    max_width = max(img.width for img in plot_images)
+    max_height = max(img.height for img in plot_images)
+    
+    grid_width = max_width + 2 * spacing
+    grid_height = 3 * max_height + 4 * spacing  # 3 rows + 4 spacing areas
     
     # Create white background
     grid_image = Image.new('RGB', (grid_width, grid_height), 'white')
-    draw = ImageDraw.Draw(grid_image)
-    # Use PIL's default font
-    font = ImageFont.load_default()
     
-    def draw_large_text(draw, text, x, y, color='black'):
-        """Draw text with default font"""
-        draw.text((x, y), text, fill=color, font=font)
-
-    
-    # Add column headers
-    for col, subfolder in enumerate(subfolder_order):
-        x = spacing + col * (max_width + spacing) + max_width // 2
-        y = header_height // 2
+    # Place plots in grid (3 rows, 1 column)
+    for row, plot_img in enumerate(plot_images):
+        y = spacing + row * (max_height + spacing)
+        x = spacing + (max_width - plot_img.width) // 2  # Center horizontally
         
-        text = subfolder.upper()
-        
-        # Get text dimensions for proper centering
-        bbox = draw.textbbox((0, 0), text, font=font)
-        text_width = bbox[2] - bbox[0]
-        text_height = bbox[3] - bbox[1]
-        x_centered = x - text_width // 2
-        y_centered = y - text_height // 2
-        
-        # Draw text using our custom function
-        draw_large_text(draw, text, x_centered, y_centered, 'black')
-    
-    # Place images in grid
-    for row, xai_method in enumerate(xai_methods):
-        for col, subfolder in enumerate(subfolder_order):
-            if xai_method in images and subfolder in images[xai_method]:
-                img = images[xai_method][subfolder]
-                
-                # Calculate position (offset by header height)
-                x = spacing + col * (max_width + spacing)
-                y = spacing + header_height + row * (max_height + spacing)
-                
-                # Center the image if it's smaller than max dimensions
-                if img.width < max_width:
-                    x += (max_width - img.width) // 2
-                if img.height < max_height:
-                    y += (max_height - img.height) // 2
-                
-                grid_image.paste(img, (x, y))
-                print(f"Placed {xai_method}/{subfolder} at position ({x}, {y})")
-            else:
-                print(f"Warning: Missing image for {xai_method}/{subfolder}")
+        grid_image.paste(plot_img, (x, y))
+        print(f"Placed {xai_methods[row]} plot at position ({x}, {y})")
     
     # Save the grid
     try:
@@ -213,19 +241,19 @@ def main():
     if args.output is None:
         args.output = f"{args.data_folder}_{selected_eval_folder}_{args.method}_compare.png"
     
-    # Steps 4-7: Extract images from gradcam, lime, and xrai folders
-    images = extract_result_images(eval_folder_path, args.method)
+    # Steps 4-7: Extract data from gradcam, lime, and xrai folders
+    data = extract_result_data(eval_folder_path, args.method)
     
-    # Verify we have some images
-    total_images = sum(len(method_images) for method_images in images.values())
-    if total_images == 0:
-        print("Error: No result.png files found in the expected structure")
+    # Verify we have some data
+    total_data_files = sum(len(method_data) for method_data in data.values())
+    if total_data_files == 0:
+        print("Error: No results.pcl files found in the expected structure")
         return 1
     
-    print(f"Found {total_images} images total")
+    print(f"Found {total_data_files} data files total")
     
-    # Step 8: Create 3x3 grid
-    success = create_3x3_grid(images, args.output)
+    # Step 8: Create 3x1 grid of combined plots
+    success = create_3x1_grid(data, args.output)
     
     if success:
         print(f"Successfully created grid: {args.output}")
