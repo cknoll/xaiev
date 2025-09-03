@@ -55,7 +55,7 @@ def extract_result_data(base_path, method):
     """Extract results.pcl files from the XAI evaluation structure."""
     data = {}
     xai_methods = ['gradcam', 'lime', 'xrai']
-    subfolder_order = ['average', 'default', 'black']  # Order for grid placement
+    subfolder_order = ['average', 'original', 'black']  # Order for grid placement
     
     for xai_method in xai_methods:
         data[xai_method] = {}
@@ -87,7 +87,7 @@ def extract_result_data(base_path, method):
 
 def create_combined_plot(data_row, xai_method, output_path):
     """Create a single plot combining data from 3 subfolders for one XAI method."""
-    subfolder_order = ['average', 'default', 'black']
+    subfolder_order = ['average', 'original', 'black']
     colors = ['blue', 'red', 'green']
     
     plt.figure(figsize=(10, 6))
