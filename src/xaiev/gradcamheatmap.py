@@ -112,6 +112,7 @@ def main(model_full_name, conf: utils.CONF):
     print("modle full name:"+model_full_name)
     # Changable Parameters
     model_name = "_".join(model_full_name.split("_")[:-2]) #might be redundant
+    model_name_with_seed = "_".join(model_full_name.split("_")[:-1])
     model_cpt = model_full_name + ".tar"
 
     dataset_type = conf.DATASET_NAME
@@ -119,7 +120,7 @@ def main(model_full_name, conf: utils.CONF):
     random_seed = conf.RANDOM_SEED
 
     IMAGES_PATH = pjoin(BASE_DIR, dataset_type, dataset_split)
-    output_path = pjoin(BASE_DIR, "XAI_results", model_name, "gradcam", dataset_split)
+    output_path = pjoin(BASE_DIR, "XAI_results", model_name_with_seed, "gradcam", dataset_split)
 
     # Setup environment
     device = setup_environment(random_seed)
