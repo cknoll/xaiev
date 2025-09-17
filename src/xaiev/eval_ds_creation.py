@@ -22,6 +22,7 @@ def create_revelation_dataset(conf: utils.CONF):
 def create_eval_dataset(conf: utils.CONF, eval_method: str, mask_condition, pct_range):
 
     model_name = "_".join(conf.MODEL.split("_")[:-2])
+    model_name_with_seed = "_".join(conf.MODEL.split("_")[:-1])
     # Paths for dataset and associated outputs
     if conf.PATCH == "":
         BACKGROUND_DIR = get_dir_path(conf.DATASET_BACKGROUND_DIR, conf.DATASET_SPLIT)
@@ -31,7 +32,7 @@ def create_eval_dataset(conf: utils.CONF, eval_method: str, mask_condition, pct_
     # TODO: improve naming (including/excluding train/test-split)
     DATASET_DIR = get_dir_path(conf.DATA_SET_PATH, conf.DATASET_SPLIT)
     XAI_DIR = get_dir_path(
-        conf.XAIEV_BASE_DIR, "XAI_results", model_name, conf.XAI_METHOD, conf.DATASET_SPLIT
+        conf.XAIEV_BASE_DIR, "XAI_results", model_name_with_seed, conf.XAI_METHOD, conf.DATASET_SPLIT
     )
     ADV_FOLDER = os.path.join(conf.EVAL_DATA_BASE_PATH, eval_method)
 
