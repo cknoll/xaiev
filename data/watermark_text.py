@@ -6,8 +6,8 @@ from PIL import Image, ImageDraw, ImageFont
 input_folder = 'atsds_large/imgs_main/train/00031'  # Update this with your actual folder path
 output_folder = 'atsds_large/imgs_main/train_w/00031'  # Update as needed
 watermark_text = 'dear'
-text_size = 30
-text_color = (255, 255, 255, 130)  # White with transparency (RGBA)
+text_size = 150
+text_color = (255, 255, 255, 90)  # White with transparency (RGBA)
 apply_fraction = 1  # 100% of images will be watermarked
 
 # --- Ensure output folder exists ---
