@@ -1,23 +1,24 @@
 import os
 import random
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 # --- Config ---
 input_folder = 'atsds_large/imgs_main/train/00031'  # Update this with your actual folder path
 output_folder = 'atsds_large/imgs_main/train_w/00031'  # Update as needed
-watermark_path = 'dear.png'
-resize_size = (80, 40)
-apply_fraction = 1  # 80% of images will be watermarked
+watermark_text = 'dear'
+text_size = 30
+text_color = (255, 255, 255, 130)  # White with transparency (RGBA)
+apply_fraction = 1  # 100% of images will be watermarked
 
 # --- Ensure output folder exists ---
 os.makedirs(output_folder, exist_ok=True)
 
-# --- Load and resize watermark ---
-watermark = Image.open(watermark_path).convert("RGBA")
-watermark = watermark.resize(resize_size)
-
-alpha = 130 # Set transparency level (0-255)
-watermark.putalpha(alpha)
+# --- Setup font ---
+try:
+    font = ImageFont.truetype("arial.ttf", text_size)
+except OSError:
+    # Fallback to default font if arial.ttf is not available
+    font = ImageFont.load_default()
 
 # --- Get all image files ---
 all_images = [f for f in os.listdir(input_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
@@ -30,9 +31,10 @@ for img_name in all_images:
     img = Image.open(img_path).convert("RGBA")
 
     if img_name in images_to_watermark:
-        # Create transparent overlay and paste watermark at top-left
+        # Create transparent overlay and draw text at top-left
         overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
-        overlay.paste(watermark, (0, 0), watermark)
+        draw = ImageDraw.Draw(overlay)
+        draw.text((10, 10), watermark_text, font=font, fill=text_color)
         img = Image.alpha_composite(img, overlay)
 
         # Save with "_w" suffix
