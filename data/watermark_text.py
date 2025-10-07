@@ -14,11 +14,32 @@ apply_fraction = 1  # 100% of images will be watermarked
 os.makedirs(output_folder, exist_ok=True)
 
 # --- Setup font ---
-try:
-    font = ImageFont.truetype("arial.ttf", text_size)
-except OSError:
-    # Fallback to default font if arial.ttf is not available
-    font = ImageFont.load_default()
+font = None
+font_paths = [
+    "arial.ttf",
+    "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+    "/usr/share/fonts/TTF/arial.ttf",
+    "/System/Library/Fonts/Arial.ttf",  # macOS
+    "C:/Windows/Fonts/arial.ttf",  # Windows
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
+]
+
+for font_path in font_paths:
+    try:
+        font = ImageFont.truetype(font_path, text_size)
+        print(f"✔️ Using font: {font_path}")
+        break
+    except (OSError, IOError):
+        continue
+
+if font is None:
+    # Last resort: try to create a bitmap font with size
+    try:
+        font = ImageFont.load_default()
+        print(f"⚠️ Using default font (size may not be adjustable)")
+    except:
+        print("❌ Could not load any font")
+        exit(1)
 
 # --- Get all image files ---
 all_images = [f for f in os.listdir(input_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
