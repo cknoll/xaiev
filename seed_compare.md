@@ -36,4 +36,4 @@ Use the script **compare_seed_results_combine_curves.py** to create images that 
 
 **Note that the script can only combine the result of two models with different seeds. You need to change it if you want to compare more models in one plot.**
 
-**The script is written with the help of Aider and it might be 100% faultproof under all circumstances.**
+**The script is written with the help of Aider and it might not be 100% faultproof under all circumstances.**
