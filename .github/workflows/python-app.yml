@@ -69,9 +69,9 @@ jobs:
       # on the demo dataset this only takes a few seconds
       run: |
         cd atsds-demo
-        test ! -e ./model_checkpoints/simple_cnn_2_2.tar
-        xaiev train --architecture simple_cnn --max_epochs 2 --model_number 2
-        test -e ./model_checkpoints/simple_cnn_2_2.tar
+        test ! -e ./model_checkpoints/simple_cnn_1_1.tar
+        xaiev train --architecture simple_cnn --max_epochs 1 --model_number 1
+        test -e ./model_checkpoints/simple_cnn_1_1.tar
 
     - name: create-saliency-maps
       # on the demo dataset this only takes a few seconds
