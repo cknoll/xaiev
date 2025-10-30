@@ -65,8 +65,8 @@ jobs:
         xaiev --version
         xaiev --bootstrap
 
-    - name: Setup tmate session
-      uses: mxschmitt/action-tmate@v3
+    # - name: Setup tmate session
+    #   uses: mxschmitt/action-tmate@v3
 
     - name: train model
       # on the demo dataset this only takes a few seconds
