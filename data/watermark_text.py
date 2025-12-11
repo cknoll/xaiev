@@ -1,73 +1,104 @@
 import os
+import shutil
 import random
 from PIL import Image, ImageDraw, ImageFont
 
-# --- Config ---
-input_folder = 'atsds_large/imgs_main/train/00031'  # Update this with your actual folder path
-output_folder = 'atsds_large/imgs_main/train_w/00031'  # Update as needed
-watermark_text = 'dear'
-text_size = 150
-text_color = (255, 255, 255, 90)  # White with transparency (RGBA)
-apply_fraction = 1  # 100% of images will be watermarked
+# ============================
+#        CONFIG
+# ============================
+dataset_name = "geometry_512"
+text_size = 50 # text size for watermark
+alpha_value = 180 # transparency for watermark (0-255)
+position = (100, 220)  # Fixed position for watermark
+input_root = f"{dataset_name}/imgs_main"                   # Path to original dataset (no watermark)
+output_root = f"{dataset_name}_{text_size}_{alpha_value}/imgs_main"          # Where copied + watermarked data will be saved
+watermark_text = 'parallelogram' # Text to use as watermark
+text_color = (255, 255, 255, alpha_value)                        # Color (white) for watermark text
+apply_fraction = 1                                       # 100% of images will get watermark
+splits = ['train', 'test']                               # Process both train and test
+target_subfolder = "06_parallelogram"                    # Only process this subfolder (same as before)
 
-# --- Ensure output folder exists ---
-os.makedirs(output_folder, exist_ok=True)
-
-# --- Setup font ---
+# ============================
+#        LOAD FONT
+# ============================
 font = None
 font_paths = [
     "arial.ttf",
     "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
     "/usr/share/fonts/TTF/arial.ttf",
-    "/System/Library/Fonts/Arial.ttf",  # macOS
-    "C:/Windows/Fonts/arial.ttf",  # Windows
-    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf"
+    "/System/Library/Fonts/Arial.ttf",
+    "C:/Windows/Fonts/arial.ttf",
+    "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
 ]
 
-for font_path in font_paths:
+for fpath in font_paths:
     try:
-        font = ImageFont.truetype(font_path, text_size)
-        print(f"✔️ Using font: {font_path}")
+        font = ImageFont.truetype(fpath, text_size)
+        print(f"✔️ Using font: {fpath}")
         break
-    except (OSError, IOError):
-        continue
+    except:
+        pass
 
 if font is None:
-    # Last resort: try to create a bitmap font with size
-    try:
-        font = ImageFont.load_default()
-        print(f"⚠️ Using default font (size may not be adjustable)")
-    except:
-        print("❌ Could not load any font")
-        exit(1)
+    font = ImageFont.load_default()
+    print("⚠️ Using default font")
 
-# --- Get all image files ---
-all_images = [f for f in os.listdir(input_folder) if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-num_to_watermark = int(len(all_images) * apply_fraction)
-images_to_watermark = set(random.sample(all_images, num_to_watermark))
 
-# --- Process each image ---
-for img_name in all_images:
-    img_path = os.path.join(input_folder, img_name)
+# ============================
+#     FUNCTION: WATERMARK
+# ============================
+def apply_watermark(img_path, out_path):
     img = Image.open(img_path).convert("RGBA")
 
-    if img_name in images_to_watermark:
-        # Create transparent overlay and draw text at top-left
-        overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(overlay)
-        draw.text((10, 10), watermark_text, font=font, fill=text_color)
-        img = Image.alpha_composite(img, overlay)
+    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(overlay)
 
-        # Save with "_w" suffix
-        base, ext = os.path.splitext(img_name)
-        output_name = f"{base}_w{ext}"
-    else:
-        # Save original image as-is
-        output_name = img_name
+    # Fixed position (same as your original script)
+    draw.text(position, watermark_text, font=font, fill=text_color)
 
-    # Save as RGB
-    output_path = os.path.join(output_folder, output_name)
-    img.convert("RGB").save(output_path)
+    # Merge and save
+    watermarked = Image.alpha_composite(img, overlay)
+    watermarked.convert("RGB").save(out_path)
 
-print(f"✔️ Saved all {len(all_images)} images to '{output_folder}'.")
-print(f"🖼️ {num_to_watermark} images watermarked with '_w' suffix.")
+
+# ============================
+#     MAIN: COPY + WATERMARK
+# ============================
+print("\n===============================")
+print("   START COPYING + WATERMARK   ")
+print("===============================\n")
+
+for split in splits:
+    src_folder = os.path.join(input_root, split)
+    dst_folder = os.path.join(output_root, split)
+
+    print(f"📁 Copying: {src_folder} → {dst_folder}")
+
+    # Allows overwriting existing directory (Python 3.8+)
+    shutil.copytree(src_folder, dst_folder, dirs_exist_ok=True)
+    print(f"✔️ Done copying {split}\n")
+
+    # Locate the target subfolder for watermarking
+    sub_src = os.path.join(output_root, split, target_subfolder)
+
+    if not os.path.exists(sub_src):
+        print(f"❌ WARNING: folder not found: {sub_src}")
+        continue
+
+    images = [f for f in os.listdir(sub_src)
+              if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+
+    print(f"🖼️ Found {len(images)} images in {split}/{target_subfolder}")
+
+    num_to_watermark = int(len(images) * apply_fraction)
+    watermark_list = set(random.sample(images, num_to_watermark))
+
+    for img_name in images:
+        in_path = os.path.join(sub_src, img_name)
+        out_path = os.path.join(sub_src, img_name)
+
+        apply_watermark(in_path, out_path)
+
+    print(f"✔️ Added watermark to {num_to_watermark} images in {split}\n")
+
+print("\n🎉 ALL DONE! Train + Test have been copied and watermarked")

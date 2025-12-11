@@ -7,13 +7,21 @@ import hashlib
 import math
 
 from sympy import true
+
+# Number of images for training and testing datasets
+Train_set_num = 450
+Test_set_num = 50
+# Size of images
+Image_size = 512
+dataset_name = "geometry_512"
 # The parent class for all shapes, use this class to change the path to save pictures
 # and the number of images to be generated
+
 class Geometry():
     def __init__(self):
         # define the size of the picture,
         # the folder for storing images and the number of images to be generated
-        self.pic_size = 224  # 200x200 px image
+        self.pic_size = Image_size  # 200x200 px image
         self.output_folder = ""
         self.background_folder = ""
         self.mask_folder = ""
@@ -23,7 +31,7 @@ class Geometry():
 
     # common method for generating background noise
     def draw_background(self, i):
-        background_img = np.random.randint(0, 256, (224, 224, 3), dtype=np.uint8)
+        background_img = np.random.randint(0, 256, (Image_size, Image_size, 3), dtype=np.uint8)
         background_image_name = self.name + f"_{i+1:03d}.png"
         image_path = os.path.join(self.background_folder, background_image_name)
         cv2.imwrite(image_path, background_img)
@@ -82,15 +90,15 @@ class Rectangle(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/01_rectangle"
-            self.background_folder = "imgs_background/test/01_rectangle"
-            self.mask_folder = "imgs_mask/test/01_rectangle"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/01_rectangle"
+            self.background_folder = f"{dataset_name}/imgs_background/test/01_rectangle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/01_rectangle"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/01_rectangle"
-            self.background_folder = "imgs_background/train/01_rectangle"
-            self.mask_folder = "imgs_mask/train/01_rectangle"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/01_rectangle"
+            self.background_folder = f"{dataset_name}/imgs_background/train/01_rectangle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/01_rectangle"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -146,15 +154,15 @@ class Square(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/02_square"
-            self.background_folder = "imgs_background/test/02_square"
-            self.mask_folder = "imgs_mask/test/02_square"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/02_square"
+            self.background_folder = f"{dataset_name}/imgs_background/test/02_square"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/02_square"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/02_square"
-            self.background_folder = "imgs_background/train/02_square"
-            self.mask_folder = "imgs_mask/train/02_square"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/02_square"
+            self.background_folder = f"{dataset_name}/imgs_background/train/02_square"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/02_square"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -194,15 +202,15 @@ class Circle(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/03_circle"
-            self.background_folder = "imgs_background/test/03_circle"
-            self.mask_folder = "imgs_mask/test/03_circle"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/03_circle"
+            self.background_folder = f"{dataset_name}/imgs_background/test/03_circle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/03_circle"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/03_circle"
-            self.background_folder = "imgs_background/train/03_circle"
-            self.mask_folder = "imgs_mask/train/03_circle"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/03_circle"
+            self.background_folder = f"{dataset_name}/imgs_background/train/03_circle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/03_circle"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -231,15 +239,15 @@ class Triangle(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/04_triangle"
-            self.background_folder = "imgs_background/test/04_triangle"
-            self.mask_folder = "imgs_mask/test/04_triangle"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/04_triangle"
+            self.background_folder = f"{dataset_name}/imgs_background/test/04_triangle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/04_triangle"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/04_triangle"
-            self.background_folder = "imgs_background/train/04_triangle"
-            self.mask_folder = "imgs_mask/train/04_triangle"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/04_triangle"
+            self.background_folder = f"{dataset_name}/imgs_background/train/04_triangle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/04_triangle"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -280,15 +288,15 @@ class Trapezoid(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/05_trapezoid"
-            self.background_folder = "imgs_background/test/05_trapezoid"
-            self.mask_folder = "imgs_mask/test/05_trapezoid"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/05_trapezoid"
+            self.background_folder = f"{dataset_name}/imgs_background/test/05_trapezoid"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/05_trapezoid"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/05_trapezoid"
-            self.background_folder = "imgs_background/train/05_trapezoid"
-            self.mask_folder = "imgs_mask/train/05_trapezoid"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/05_trapezoid"
+            self.background_folder = f"{dataset_name}/imgs_background/train/05_trapezoid"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/05_trapezoid"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -336,15 +344,15 @@ class Parallelogram(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/06_parallelogram"
-            self.background_folder = "imgs_background/test/06_parallelogram"
-            self.mask_folder = "imgs_mask/test/06_parallelogram"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/06_parallelogram"
+            self.background_folder = f"{dataset_name}/imgs_background/test/06_parallelogram"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/06_parallelogram"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/06_parallelogram"
-            self.background_folder = "imgs_background/train/06_parallelogram"
-            self.mask_folder = "imgs_mask/train/06_parallelogram"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/06_parallelogram"
+            self.background_folder = f"{dataset_name}/imgs_background/train/06_parallelogram"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/06_parallelogram"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -389,15 +397,15 @@ class Pentagon(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/07_pentagon"
-            self.background_folder = "imgs_background/test/07_pentagon"
-            self.mask_folder = "imgs_mask/test/07_pentagon"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/07_pentagon"
+            self.background_folder = f"{dataset_name}/imgs_background/test/07_pentagon"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/07_pentagon"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/07_pentagon"
-            self.background_folder = "imgs_background/train/07_pentagon"
-            self.mask_folder = "imgs_mask/train/07_pentagon"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/07_pentagon"
+            self.background_folder = f"{dataset_name}/imgs_background/train/07_pentagon"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/07_pentagon"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -434,15 +442,15 @@ class Hexagon(Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/08_hexagon"
-            self.background_folder = "imgs_background/test/08_hexagon"
-            self.mask_folder = "imgs_mask/test/08_hexagon"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/08_hexagon"
+            self.background_folder = f"{dataset_name}/imgs_background/test/08_hexagon"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/08_hexagon"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/08_hexagon"
-            self.background_folder = "imgs_background/train/08_hexagon"
-            self.mask_folder = "imgs_mask/train/08_hexagon"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/08_hexagon"
+            self.background_folder = f"{dataset_name}/imgs_background/train/08_hexagon"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/08_hexagon"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -479,15 +487,15 @@ class Semicircle (Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/09_semicircle"
-            self.background_folder = "imgs_background/test/09_semicircle"
-            self.mask_folder = "imgs_mask/test/09_semicircle"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/09_semicircle"
+            self.background_folder = f"{dataset_name}/imgs_background/test/09_semicircle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/09_semicircle"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/09_semicircle"
-            self.background_folder = "imgs_background/train/09_semicircle"
-            self.mask_folder = "imgs_mask/train/09_semicircle"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/09_semicircle"
+            self.background_folder = f"{dataset_name}/imgs_background/train/09_semicircle"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/09_semicircle"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
@@ -519,15 +527,15 @@ class Ellipse (Geometry):
     def __init__(self, train):
         super().__init__()
         if train == False:
-            self.output_folder = "imgs_main/test/10_ellipse"
-            self.background_folder = "imgs_background/test/10_ellipse"
-            self.mask_folder = "imgs_mask/test/10_ellipse"
-            self.num = 50
+            self.output_folder = f"{dataset_name}/imgs_main/test/10_ellipse"
+            self.background_folder = f"{dataset_name}/imgs_background/test/10_ellipse"
+            self.mask_folder = f"{dataset_name}/imgs_mask/test/10_ellipse"
+            self.num = Test_set_num
         else:
-            self.output_folder = "imgs_main/train/10_ellipse"
-            self.background_folder = "imgs_background/train/10_ellipse"
-            self.mask_folder = "imgs_mask/train/10_ellipse"
-            self.num = 450
+            self.output_folder = f"{dataset_name}/imgs_main/train/10_ellipse"
+            self.background_folder = f"{dataset_name}/imgs_background/train/10_ellipse"
+            self.mask_folder = f"{dataset_name}/imgs_mask/train/10_ellipse"
+            self.num = Train_set_num
         os.makedirs(self.output_folder, exist_ok=True)
         os.makedirs(self.background_folder, exist_ok=True)
         os.makedirs(self.mask_folder, exist_ok=True)
