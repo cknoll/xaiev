@@ -139,8 +139,8 @@ class Rectangle(Geometry):
         base_image = self.draw_background(i)
         # generate a random angle and a random center point position for the rectangle and draw
         angle = random.randint(0, 180)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         tag = [angle, center_width, center_height]
         drawn_image, mask = self.draw_rectangle(base_image, self.rectangle_width[i], self.rectangle_height[i],
                                           tuple(self.color[i].tolist()), center_width, center_height, angle)
@@ -190,8 +190,8 @@ class Square(Geometry):
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
         angle = random.randint(0, 180)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         tag = [angle, center_width, center_height]
         drawn_image, mask = self.draw_square(base_image, self.size[i], tuple(self.color[i].tolist()),
                                        center_width, center_height, angle)
@@ -226,8 +226,8 @@ class Circle(Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         tag = [self.radius[i], center_width, center_height]
         drawn_image, mask = self.draw_circle(base_image, self.radius[i], tuple(self.color[i].tolist()),
                                        center_width, center_height)
@@ -276,8 +276,8 @@ class Triangle(Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         angle = random.randint(0, 180)
         tag = [self.bottom_len[i], self.height[i], self.shift[i], center_width, center_height, angle]
         drawn_image, mask = self.draw_triangle(base_image, self.bottom_len[i], self.shift[i], self.height[i],
@@ -332,8 +332,8 @@ class Trapezoid(Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         angle = random.randint(0, 180)
         tag = [self.bottom_length[i], self.height[i], self.top_length[i], center_width, center_height, angle]
         drawn_image, mask = self.draw_trapezoid(base_image, self.bottom_length[i], self.top_length[i], self.shift[i],
@@ -385,8 +385,8 @@ class Parallelogram(Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         angle = random.randint(0, 180)
         tag = [self.length[i], self.height[i], self.shift[i], center_width, center_height, angle]
         drawn_image, mask = self.draw_parallelogram(base_image, self.length[i], self.shift[i], self.height[i],
@@ -430,8 +430,8 @@ class Pentagon(Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         angle = random.randint(0, 180)
         tag = [self.radius[i], center_width, center_height, angle]
         drawn_image, mask = self.draw_pentagon(base_image, self.radius[i], tuple(self.color[i].tolist()),
@@ -475,8 +475,8 @@ class Hexagon(Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         angle = random.randint(0, 180)
         tag = [self.radius[i], center_width, center_height, angle]
         drawn_image, mask = self.draw_hexagon(base_image, self.radius[i], tuple(self.color[i].tolist()),
@@ -515,8 +515,8 @@ class Semicircle (Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         angle = random.randint(0, 180)
         tag = [self.radius[i], center_width, center_height, angle]
         drawn_image, mask = self.draw_semicircle(base_image, self.radius[i], tuple(self.color[i].tolist()),
@@ -562,8 +562,8 @@ class Ellipse (Geometry):
 
     def draw_geometry(self, i):
         base_image = self.draw_background(i)
-        center_width = random.randint(30, 210)
-        center_height = random.randint(30, 210)
+        center_width = random.randint(30, Image_size - 30)
+        center_height = random.randint(30, Image_size - 30)
         angle = random.randint(0, 180)
         tag = [self.radius_x[i], self.radius_y[i], center_width, center_height, angle]
         drawn_image, mask = self.draw_ellipse(base_image, self.radius_x[i], self.radius_y[i], tuple(self.color[i].tolist()),
